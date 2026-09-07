@@ -18,6 +18,7 @@ use ReflectionNamedType;
 use ReflectionParameter;
 
 use function Framework\app;
+use function Framework\throw_anyway;
 
 trait DependencyResolvable
 {
@@ -38,11 +39,11 @@ trait DependencyResolvable
             return $parameter->getDefaultValue();
         }
 
-        throw new ReflectionException(sprintf(
+        throw_anyway(sprintf(
             'Unable to resolve primitive parameter "%s" in class "%s".',
             $parameter->getName(),
             $parameter->getDeclaringClass()->getName()
-        ));
+        ), ReflectionException::class);
     }
 
     /**

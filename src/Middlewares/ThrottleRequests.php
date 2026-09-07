@@ -24,6 +24,8 @@ use Framework\RateLimiting\Unlimited;
 use InvalidArgumentException;
 
 use function Framework\app;
+use function Framework\throw_exception;
+use function Framework\throw_if;
 
 class ThrottleRequests implements Middleware
 {
@@ -104,13 +106,13 @@ class ThrottleRequests implements Middleware
         $key = $this->resolve_key($request, $limit);
 
         if ($limiter->too_many_attempts($key, $limit->max_attempts)) {
-            throw $this->rejection($request, $limit, $key);
+            throw_exception($this->rejection($request, $limit, $key));
         }
 
         $hits = $limiter->increment($key, $limit->decay_seconds);
 
         if ($hits > $limit->max_attempts) {
-            throw $this->rejection($request, $limit, $key);
+            throw_exception($this->rejection($request, $limit, $key));
         }
 
         $this->record_headers([
@@ -186,11 +188,11 @@ class ThrottleRequests implements Middleware
 
         $callback = $this->limiter()->limiter((string) $first);
 
-        if (is_null($callback)) {
-            throw new InvalidArgumentException(
-                sprintf('Rate limiter [%s] is not registered.', $first)
-            );
-        }
+        throw_if(
+            is_null($callback),
+            sprintf('Rate limiter [%s] is not registered.', $first),
+            InvalidArgumentException::class
+        );
 
         $limits = $callback($request);
 

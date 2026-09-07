@@ -19,6 +19,8 @@ use InvalidArgumentException;
 use function Framework\app;
 use function Framework\config_path;
 use function Framework\message;
+use function Framework\throw_if;
+use function Framework\throw_unless;
 use function Framework\user;
 
 class PolicyManager
@@ -175,15 +177,19 @@ class PolicyManager
     {
         $user = $this->get_current_user();
 
-        if (!$user->is_logged_in()) {
-            throw new AuthorizationException(message('auth.logged_in_required'));
-        }
+        throw_unless(
+            $user->is_logged_in(),
+            message('auth.logged_in_required'),
+            AuthorizationException::class
+        );
 
         $policy = $this->resolve_policy($model);
 
-        if (!$policy) {
-            throw new AuthorizationException(message('auth.no_policy'));
-        }
+        throw_unless(
+            $policy,
+            message('auth.no_policy'),
+            AuthorizationException::class
+        );
 
         if (method_exists($policy, 'before')) {
             $before_result = $policy->before($user, $ability);
@@ -192,18 +198,18 @@ class PolicyManager
                 return true;
             }
 
-            if ($before_result === false) {
-                throw new AuthorizationException(
-                    message('auth.unauthorized_action', $ability)
-                );
-            }
-        }
-
-        if (!method_exists($policy, $ability)) {
-            throw new AuthorizationException(
-                message('auth.ability_not_defined', $ability)
+            throw_if(
+                $before_result === false,
+                message('auth.unauthorized_action', $ability),
+                AuthorizationException::class
             );
         }
+
+        throw_unless(
+            method_exists($policy, $ability),
+            message('auth.ability_not_defined', $ability),
+            AuthorizationException::class
+        );
 
         $dependencies = $this->resolve_method_dependencies(
             $policy,
@@ -213,11 +219,11 @@ class PolicyManager
 
         $can_perform = $policy->$ability(...$dependencies);
 
-        if (!$can_perform) {
-            throw new AuthorizationException(
-                message('auth.unauthorized_action', $ability)
-            );
-        }
+        throw_unless(
+            $can_perform,
+            message('auth.unauthorized_action', $ability),
+            AuthorizationException::class
+        );
 
         return true;
     }

@@ -16,6 +16,8 @@ use Framework\Contracts\Migration;
 use Framework\Supports\Facades\Schema;
 use Exception;
 
+use function Framework\throw_unless;
+
 class Migrator
 {
     /**
@@ -244,23 +246,23 @@ class Migrator
      */
     protected function validate_migration($migration, string $class_name)
     {
-        if (!class_exists($class_name)) {
-            throw new Exception(
-                sprintf(
-                    'Class [%s] does not exist',
-                    $class_name
-                )
-            );
-        }
+        throw_unless(
+            class_exists($class_name),
+            sprintf(
+                'Class [%s] does not exist',
+                $class_name
+            ),
+            Exception::class
+        );
 
-        if (!$migration instanceof Migration) {
-            throw new Exception(
-                sprintf(
-                    'Class [%s] must implements [%s]',
-                    $class_name,
-                    Migration::class
-                )
-            );
-        }
+        throw_unless(
+            $migration instanceof Migration,
+            sprintf(
+                'Class [%s] must implements [%s]',
+                $class_name,
+                Migration::class
+            ),
+            Exception::class
+        );
     }
 }

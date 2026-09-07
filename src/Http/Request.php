@@ -26,6 +26,7 @@ use InvalidArgumentException;
 use function Framework\app;
 use function Framework\config;
 use function Framework\message;
+use function Framework\throw_unless;
 use function Framework\user;
 use function Framework\value;
 
@@ -212,11 +213,11 @@ class Request implements RequestContract, Arrayable
     {
         $name = strtolower($name);
 
-        if (!in_array($name, static::$types, true)) {
-            throw new BadMethodCallException(
-                sprintf('Method %s::%s does not exist.', static::class, $name)
-            );
-        }
+        throw_unless(
+            in_array($name, static::$types, true),
+            sprintf('Method %s::%s does not exist.', static::class, $name),
+            BadMethodCallException::class
+        );
 
         $method_name = 'get_' . $name;
 
@@ -1066,9 +1067,7 @@ class Request implements RequestContract, Arrayable
      */
     public function authorize_request()
     {
-        if (!$this->authorize()) {
-            throw new AuthorizationException(message('auth.unauthorized_request'));
-        }
+        throw_unless($this->authorize(), message('auth.unauthorized_request'), AuthorizationException::class);
 
         return $this;
     }

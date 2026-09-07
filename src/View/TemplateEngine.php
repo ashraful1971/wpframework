@@ -14,6 +14,7 @@ defined('ABSPATH') || exit;
 use RuntimeException;
 
 use function Framework\app;
+use function Framework\throw_if;
 
 class TemplateEngine
 {
@@ -88,9 +89,7 @@ class TemplateEngine
     {
         $path = $this->resolve_path($view);
 
-        if ($path === '') {
-            throw new RuntimeException(sprintf('View [%s] not found.', $view));
-        }
+        throw_if($path === '', sprintf('View [%s] not found.', $view), RuntimeException::class);
 
         $merged = array_merge($this->shared, $data);
         $context = app(ViewContext::class);
@@ -138,9 +137,7 @@ class TemplateEngine
     {
         $master_path = $this->resolve_path($master_view);
 
-        if ($master_path === '') {
-            throw new RuntimeException(sprintf('Master layout [%s] not found.', $master_view));
-        }
+        throw_if($master_path === '', sprintf('Master layout [%s] not found.', $master_view), RuntimeException::class);
 
         $sections = app(SectionManager::class);
         $sections->clear();
@@ -349,9 +346,7 @@ class TemplateEngine
     {
         $path = $this->resolve_path($view);
 
-        if ($path === '') {
-            throw new RuntimeException(sprintf('View [%s] not found.', $view));
-        }
+        throw_if($path === '', sprintf('View [%s] not found.', $view), RuntimeException::class);
 
         $merged = array_merge($this->shared, $data);
         $context = app(ViewContext::class);

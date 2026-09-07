@@ -60,6 +60,10 @@ use Framework\Supports\Arr;
 use InvalidArgumentException;
 use RuntimeException;
 
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+use function Framework\throw_unless;
+
 class Application extends Container
 {
     use Macroable;
@@ -497,9 +501,7 @@ class Application extends Container
      */
     public function use_routing(string $path)
     {
-        if (!file_exists($path)) {
-            throw new Exception("Route file not found: $path");
-        }
+        throw_unless(file_exists($path), "Route file not found: $path", Exception::class);
 
         include $path;
 
@@ -914,15 +916,15 @@ class Application extends Container
         }
 
         foreach ($providers as $provider) {
-            if (!class_exists($provider) || !is_subclass_of($provider, ServiceProvider::class)) {
-                throw new InvalidArgumentException(
-                    sprintf(
-                        'Class %s must be a subclass of %s.',
-                        $provider,
-                        ServiceProvider::class
-                    )
-                );
-            }
+            throw_if(
+                !class_exists($provider) || !is_subclass_of($provider, ServiceProvider::class),
+                sprintf(
+                    'Class %s must be a subclass of %s.',
+                    $provider,
+                    ServiceProvider::class
+                ),
+                InvalidArgumentException::class
+            );
 
             $this->register(new $provider($this));
         }
@@ -1084,7 +1086,7 @@ class Application extends Container
             }
         }
 
-        throw new RuntimeException(sprintf('Unable to detect namespace for path [%s].', $relative_path));
+        throw_anyway(sprintf('Unable to detect namespace for path [%s].', $relative_path), RuntimeException::class);
     }
 
     /**

@@ -22,6 +22,8 @@ use WP_Http_Cookie;
 
 use function Framework\collection;
 use function Framework\Polyfill\str_contains;
+use function Framework\throw_anyway;
+use function Framework\throw_unless;
 
 class Request
 {
@@ -729,9 +731,11 @@ class Request
      */
     protected function send_request(string $method, string $url, array $options = [])
     {
-        if (!$this->is_valid_method($method)) {
-            throw new RuntimeException(sprintf('Invalid HTTP method: %s', $method));
-        }
+        throw_unless(
+            $this->is_valid_method($method),
+            sprintf('Invalid HTTP method: %s', $method),
+            RuntimeException::class
+        );
 
         $data = $this->parse_request_data($method, $url, $options);
         $url = $this->prepare_request_url($method, $url, $data);
@@ -840,9 +844,7 @@ class Request
             case 'multipart':
                 return $this->make_multipart_body($data);
             default:
-                throw new RuntimeException(
-                    sprintf('Invalid body format: %s', $this->body_format)
-                );
+                throw_anyway(sprintf('Invalid body format: %s', $this->body_format), RuntimeException::class);
         }
     }
 
@@ -951,8 +953,6 @@ class Request
             return $this->call_macro($method, $parameters);
         }
 
-        throw new BadMethodCallException(
-            sprintf('Call to undefined method %s::%s', static::class, $method)
-        );
+        throw_anyway(sprintf('Call to undefined method %s::%s', static::class, $method), BadMethodCallException::class);
     }
 }

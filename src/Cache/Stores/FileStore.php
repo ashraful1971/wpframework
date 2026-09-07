@@ -21,6 +21,8 @@ use Framework\Exceptions\StoreUnavailableException;
 use Framework\Filesystem\Filesystem;
 use Throwable;
 
+use function Framework\throw_if;
+
 class FileStore implements Store, CacheEntryProvider
 {
     use HashesKeys;
@@ -142,11 +144,11 @@ class FileStore implements Store, CacheEntryProvider
 
         $method = get_filesystem_method();
 
-        if ($method !== 'direct') {
-            throw new StoreUnavailableException(
-                sprintf('The file cache store requires direct filesystem access, got [%s].', (string) $method)
-            );
-        }
+        throw_if(
+            $method !== 'direct',
+            sprintf('The file cache store requires direct filesystem access, got [%s].', (string) $method),
+            StoreUnavailableException::class
+        );
     }
 
     /**

@@ -36,6 +36,10 @@ use Framework\Contracts\SomoyInterface;
 use Framework\Exceptions\InvalidDateFormatException;
 use InvalidArgumentException;
 
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+use function Framework\throw_unless;
+
 class Somoy extends DateTime implements SomoyInterface
 {
     /**
@@ -303,12 +307,11 @@ class Somoy extends DateTime implements SomoyInterface
             $time = (string) $time;
         }
 
-        if ($time !== null && !is_string($time)) {
-            throw new InvalidDateFormatException(sprintf(
-                'Could not parse a value of type %s as a date.',
-                gettype($time)
-            ));
-        }
+        throw_if(
+            $time !== null && !is_string($time),
+            sprintf('Could not parse a value of type %s as a date.', gettype($time)),
+            InvalidDateFormatException::class
+        );
 
         try {
             return new static(
@@ -316,8 +319,9 @@ class Somoy extends DateTime implements SomoyInterface
                 static::resolve_timezone($timezone)
             );
         } catch (Exception $exception) {
-            throw new InvalidDateFormatException(
+            throw_anyway(
                 sprintf('Could not parse "%s" as a date.', $time),
+                InvalidDateFormatException::class,
                 0,
                 $exception
             );
@@ -386,13 +390,15 @@ class Somoy extends DateTime implements SomoyInterface
             ? DateTime::createFromFormat($format, $time)
             : DateTime::createFromFormat($format, $time, $timezone);
 
-        if (!$date instanceof DateTimeInterface) {
-            throw new InvalidDateFormatException(sprintf(
+        throw_unless(
+            $date instanceof DateTimeInterface,
+            sprintf(
                 'Could not parse "%s" using the format "%s".',
                 is_scalar($time) ? $time : gettype($time),
                 $format
-            ));
-        }
+            ),
+            InvalidDateFormatException::class
+        );
 
         return static::instance($date);
     }
@@ -1421,12 +1427,11 @@ class Somoy extends DateTime implements SomoyInterface
             $modified = false;
         }
 
-        if ($modified === false) {
-            throw new InvalidDateFormatException(sprintf(
-                'Could not read "%s" as a time.',
-                is_scalar($given) ? $given : gettype($given)
-            ));
-        }
+        throw_if(
+            $modified === false,
+            sprintf('Could not read "%s" as a time.', is_scalar($given) ? $given : gettype($given)),
+            InvalidDateFormatException::class
+        );
 
         return $this;
     }
@@ -1468,13 +1473,11 @@ class Somoy extends DateTime implements SomoyInterface
      */
     public function __get($name)
     {
-        if (!isset(static::$readable_units[$name])) {
-            throw new InvalidArgumentException(sprintf(
-                'Undefined property %s::$%s.',
-                static::class,
-                $name
-            ));
-        }
+        throw_unless(
+            isset(static::$readable_units[$name]),
+            sprintf('Undefined property %s::$%s.', static::class, $name),
+            InvalidArgumentException::class
+        );
 
         return (int) $this->format(static::$readable_units[$name]);
     }
@@ -1510,11 +1513,10 @@ class Somoy extends DateTime implements SomoyInterface
      */
     public function __call($method, $parameters)
     {
-        throw new BadMethodCallException(sprintf(
-            'Call to undefined method %s::%s(). Date methods are snake_case.',
-            static::class,
-            $method
-        ));
+        throw_anyway(
+            sprintf('Call to undefined method %s::%s(). Date methods are snake_case.', static::class, $method),
+            BadMethodCallException::class
+        );
     }
 
     /**
@@ -1531,11 +1533,10 @@ class Somoy extends DateTime implements SomoyInterface
      */
     public static function __callStatic($method, $parameters)
     {
-        throw new BadMethodCallException(sprintf(
-            'Call to undefined method %s::%s(). Date methods are snake_case.',
-            static::class,
-            $method
-        ));
+        throw_anyway(
+            sprintf('Call to undefined method %s::%s(). Date methods are snake_case.', static::class, $method),
+            BadMethodCallException::class
+        );
     }
 
     /**
@@ -1591,8 +1592,9 @@ class Somoy extends DateTime implements SomoyInterface
         try {
             return new DateTimeZone($timezone);
         } catch (Exception $exception) {
-            throw new InvalidDateFormatException(
+            throw_anyway(
                 sprintf('Unknown timezone "%s".', is_scalar($timezone) ? $timezone : gettype($timezone)),
+                InvalidDateFormatException::class,
                 0,
                 $exception
             );
@@ -1637,18 +1639,18 @@ class Somoy extends DateTime implements SomoyInterface
      */
     protected static function from_timestamp($timestamp)
     {
-        if (!is_numeric($timestamp)) {
-            throw new InvalidDateFormatException(sprintf(
-                'Could not create a date from a non numeric timestamp of type %s.',
-                gettype($timestamp)
-            ));
-        }
+        throw_unless(
+            is_numeric($timestamp),
+            sprintf('Could not create a date from a non numeric timestamp of type %s.', gettype($timestamp)),
+            InvalidDateFormatException::class
+        );
 
         try {
             return new static('@' . sprintf('%.6F', (float) $timestamp));
         } catch (Exception $exception) {
-            throw new InvalidDateFormatException(
+            throw_anyway(
                 sprintf('Could not create a date from the timestamp "%s".', $timestamp),
+                InvalidDateFormatException::class,
                 0,
                 $exception
             );

@@ -28,6 +28,8 @@ use RuntimeException;
 
 use function Framework\collection;
 use function Framework\Polyfill\str_contains;
+use function Framework\throw_anyway;
+use function Framework\throw_if;
 
 class Connection
 {
@@ -111,7 +113,7 @@ class Connection
             global $wpdb;
             $this->db = $wpdb;
         } catch (Exception $error) {
-            throw new Exception("Database connection failed: " . $error->getMessage());
+            throw_anyway("Database connection failed: " . $error->getMessage(), Exception::class);
         }
     }
 
@@ -358,16 +360,17 @@ class Connection
 
             return $result;
         } catch (Exception $error) {
-            if ($this->is_unique_constraint_error($error)) {
-                throw new UniqueConstraintViolationException(
-                    $query,
-                    $this->prepare_bindings($bindings),
-                    $error
-                );
-            }
-
-            throw new QueryException(
+            throw_if(
+                $this->is_unique_constraint_error($error),
                 $query,
+                UniqueConstraintViolationException::class,
+                $this->prepare_bindings($bindings),
+                $error
+            );
+
+            throw_anyway(
+                $query,
+                QueryException::class,
                 $this->prepare_bindings($bindings),
                 $error
             );

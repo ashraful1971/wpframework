@@ -21,6 +21,9 @@ use Framework\Contracts\Container as ContainerContract;
 use LogicException;
 use ReflectionNamedType;
 
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+
 class Container implements ContainerContract
 {
     /**
@@ -188,9 +191,7 @@ class Container implements ContainerContract
      */
     public function alias(string $alias, string $abstract)
     {
-        if ($alias === $abstract) {
-            throw new LogicException(sprintf('[%s] is aliased to itself.', $abstract));
-        }
+        throw_if($alias === $abstract, sprintf('[%s] is aliased to itself.', $abstract), LogicException::class);
 
         $this->aliases[$alias] = $abstract;
     }
@@ -328,10 +329,10 @@ class Container implements ContainerContract
         // Check for circular dependencies
         if ($this->resolved($class)) {
             $chain = implode(' → ', $this->resolved) . " → {$class}";
-            throw new Exception(sprintf(
+            throw_anyway(sprintf(
                 'Circular dependency detected: %s',
                 $chain
-            ));
+            ), Exception::class);
         }
 
         $this->resolved[] = $class;
@@ -416,11 +417,11 @@ class Container implements ContainerContract
             return $parameter->getDefaultValue();
         }
 
-        throw new Exception(sprintf(
+        throw_anyway(sprintf(
             'Unable to resolve primitive parameter "%s" in class "%s".',
             $param_name,
             $parameter->getDeclaringClass()->getName()
-        ));
+        ), Exception::class);
     }
 
     /**

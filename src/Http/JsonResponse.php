@@ -20,6 +20,8 @@ use InvalidArgumentException;
 use JsonSerializable;
 use WP_REST_Response;
 
+use function Framework\throw_unless;
+
 class JsonResponse extends WP_REST_Response
 {
     use InteractsWithCookies;
@@ -163,9 +165,7 @@ class JsonResponse extends WP_REST_Response
                 break;
         }
 
-        if (!$this->is_valid_json(json_last_error())) {
-            throw new InvalidArgumentException(json_last_error_msg());
-        }
+        throw_unless($this->is_valid_json(json_last_error()), json_last_error_msg(), InvalidArgumentException::class);
 
         return $this;
     }

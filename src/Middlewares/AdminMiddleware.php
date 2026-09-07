@@ -18,6 +18,7 @@ use Framework\Http\Response;
 use Framework\Wordpress\Constants\Capabilities;
 
 use function Framework\message;
+use function Framework\throw_anyway;
 
 class AdminMiddleware implements Middleware
 {
@@ -40,6 +41,6 @@ class AdminMiddleware implements Middleware
             return $next($request);
         };
 
-        throw new AuthorizationException(message('auth.admin_required'), Response::FORBIDDEN);
+        throw_anyway(message('auth.admin_required'), AuthorizationException::class, Response::FORBIDDEN);
     }
 }

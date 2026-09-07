@@ -21,6 +21,7 @@ use function Framework\Polyfill\array_first;
 use function Framework\Polyfill\array_last;
 use function Framework\Polyfill\str_contains;
 use function Framework\Polyfill\str_starts_with;
+use function Framework\throw_if;
 
 class RuleFactory
 {
@@ -202,9 +203,11 @@ class RuleFactory
 
             $rule_class = $this->get_rule_class($rule_name, $arguments);
 
-            if ($rule_class === null && $last_base_rule === null) {
-                throw new InvalidValidationRuleException(message('validator.invalid_rule', [$rule]));
-            }
+            throw_if(
+                $rule_class === null && $last_base_rule === null,
+                message('validator.invalid_rule', [$rule]),
+                InvalidValidationRuleException::class
+            );
 
             if ($rule_class !== null) {
                 $last_base_rule = $rule_class->get_rule_name();

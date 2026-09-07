@@ -37,6 +37,9 @@ use function Framework\Polyfill\array_first;
 use function Framework\Polyfill\array_last;
 use function Framework\Polyfill\str_contains;
 use function Framework\tap;
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+use function Framework\throw_unless;
 use function Framework\value;
 
 /**
@@ -482,9 +485,11 @@ class QueryBuilder
      */
     public function set_bindings(array $bindings, $type = 'where')
     {
-        if (!array_key_exists($type, $this->bindings)) {
-            throw new InvalidArgumentException("Invalid binding type: $type");
-        }
+        throw_unless(
+            array_key_exists($type, $this->bindings),
+            "Invalid binding type: $type",
+            InvalidArgumentException::class
+        );
 
         $this->bindings[$type] = $bindings;
 
@@ -507,9 +512,11 @@ class QueryBuilder
     {
         $type = strtolower($type);
 
-        if (!array_key_exists($type, $this->bindings)) {
-            throw new InvalidArgumentException(sprintf('Invalid binding type: %s', $type));
-        }
+        throw_unless(
+            array_key_exists($type, $this->bindings),
+            sprintf('Invalid binding type: %s', $type),
+            InvalidArgumentException::class
+        );
 
         if (is_array($value)) {
             $this->bindings[$type] = array_values(
@@ -2828,7 +2835,7 @@ class QueryBuilder
             return $model;
         }
 
-        throw new ModelNotFoundException(get_class($this->model));
+        throw_anyway(get_class($this->model), ModelNotFoundException::class);
     }
 
     /**
@@ -3591,9 +3598,7 @@ class QueryBuilder
             throw new RecordNotFoundException();
         }
 
-        if ($count > 1) {
-            throw new MultipleRecordsFoundException($count);
-        }
+        throw_if($count > 1, $count, MultipleRecordsFoundException::class);
 
         return $result->first();
     }

@@ -17,6 +17,7 @@ use Framework\Listener;
 use InvalidArgumentException;
 
 use function Framework\config_path;
+use function Framework\throw_unless;
 
 class EventManager
 {
@@ -74,12 +75,11 @@ class EventManager
      */
     public function dispatch($event)
     {
-        if (!is_object($event)) {
-            throw new InvalidArgumentException(sprintf(
-                'The event must be an object, got [%s]',
-                gettype($event)
-            ));
-        }
+        throw_unless(
+            is_object($event),
+            sprintf('The event must be an object, got [%s]', gettype($event)),
+            InvalidArgumentException::class
+        );
 
         $event_class = get_class($event);
 

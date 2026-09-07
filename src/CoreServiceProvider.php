@@ -37,6 +37,7 @@ use Framework\View\TemplateEngine;
 use Framework\View\ViewContext;
 
 use function Framework\config;
+use function Framework\throw_anyway;
 
 class CoreServiceProvider extends ServiceProvider
 {
@@ -146,8 +147,9 @@ class CoreServiceProvider extends ServiceProvider
                 return new ArraySessionHandler();
             }
 
-            throw new InvalidArgumentException(
-                sprintf('Unsupported session driver [%s]. Use "database" or "array".', (string) $driver)
+            throw_anyway(
+                sprintf('Unsupported session driver [%s]. Use "database" or "array".', (string) $driver),
+                InvalidArgumentException::class
             );
         });
 

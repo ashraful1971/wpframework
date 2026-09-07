@@ -15,6 +15,7 @@ defined('ABSPATH') || exit;
 use RuntimeException;
 
 use function Framework\app;
+use function Framework\throw_unless;
 
 class CommandManager
 {
@@ -59,18 +60,20 @@ class CommandManager
     protected function resolve($command)
     {
         if (is_object($command)) {
-            if (!$command instanceof CommandBase) {
-                throw new RuntimeException(
-                    sprintf("Command [%s] must extend [%s]", get_class($command), CommandBase::class)
-                );
-            }
+            throw_unless(
+                $command instanceof CommandBase,
+                sprintf("Command [%s] must extend [%s]", get_class($command), CommandBase::class),
+                RuntimeException::class
+            );
 
             return $command;
         }
 
-        if (!class_exists($command)) {
-            throw new RuntimeException(sprintf("Command class [%s] not found", $command));
-        }
+        throw_unless(
+            class_exists($command),
+            sprintf("Command class [%s] not found", $command),
+            RuntimeException::class
+        );
 
         return app()->make($command);
     }

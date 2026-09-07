@@ -14,6 +14,7 @@ use Exception;
 use Framework\Collections\HigherOrderCollectionProxy;
 
 use function Framework\deep_get;
+use function Framework\throw_unless;
 
 /**
  * Trait to enumerate values of the collection.
@@ -113,9 +114,11 @@ trait EnumeratesValues
      */
     public function __get($key)
     {
-        if (!in_array($key, static::$proxies, true)) {
-            throw new Exception(sprintf('Property [%s] does not exist on this collection.', $key));
-        }
+        throw_unless(
+            in_array($key, static::$proxies, true),
+            sprintf('Property [%s] does not exist on this collection.', $key),
+            Exception::class
+        );
 
         return new HigherOrderCollectionProxy($this, $key);
     }

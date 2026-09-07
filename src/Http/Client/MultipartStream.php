@@ -16,6 +16,7 @@ use Framework\Collections\Collection;
 use UnexpectedValueException;
 
 use function Framework\collection;
+use function Framework\throw_unless;
 
 class MultipartStream
 {
@@ -119,9 +120,7 @@ class MultipartStream
     protected function create_stream_item(array $item)
     {
         foreach (['contents', 'name'] as $key) {
-            if (!array_key_exists($key, $item)) {
-                throw new UnexpectedValueException("Missing {$key} in item");
-            }
+            throw_unless(array_key_exists($key, $item), "Missing {$key} in item", UnexpectedValueException::class);
         }
 
         $name = $item['name'];

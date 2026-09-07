@@ -16,6 +16,10 @@ use Exception;
 use InvalidArgumentException;
 use SplFileInfo;
 
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+use function Framework\throw_unless;
+
 class File extends SplFileInfo
 {
     /**
@@ -32,9 +36,11 @@ class File extends SplFileInfo
      */
     public function __construct(string $path, bool $check_path = true)
     {
-        if ($check_path && !file_exists($path)) {
-            throw new InvalidArgumentException("File does not exist at path: {$path}");
-        }
+        throw_if(
+            $check_path && !file_exists($path),
+            "File does not exist at path: {$path}",
+            InvalidArgumentException::class
+        );
 
         parent::__construct($path);
     }
@@ -65,16 +71,16 @@ class File extends SplFileInfo
             restore_error_handler();
         }
 
-        if (!$renamed) {
-            throw new Exception(
-                sprintf(
-                    'Could not move the file "%s" to "%s" (%s).',
-                    $this->getPathname(),
-                    $target,
-                    strip_tags($error ?? '')
-                )
-            );
-        }
+        throw_unless(
+            $renamed,
+            sprintf(
+                'Could not move the file "%s" to "%s" (%s).',
+                $this->getPathname(),
+                $target,
+                strip_tags($error ?? '')
+            ),
+            Exception::class
+        );
 
         @chmod($target, 0666 & ~umask());
 
@@ -94,9 +100,7 @@ class File extends SplFileInfo
     {
         $content = file_get_contents($this->getPathname());
 
-        if ($content === false) {
-            throw new Exception(sprintf('Unable to read the file "%s".', $this->getPathname()));
-        }
+        throw_if($content === false, sprintf('Unable to read the file "%s".', $this->getPathname()), Exception::class);
 
         return $content;
     }
@@ -116,15 +120,15 @@ class File extends SplFileInfo
     protected function get_target_file(string $directory, ?string $name = null)
     {
         if (!is_dir($directory) && !@mkdir($directory, 0777, true) && !is_dir($directory)) {
-            if (is_file($directory)) {
-                throw new Exception(
-                    sprintf('Unable to create the "%s" directory. A similar named file exists.', $directory)
-                );
-            }
+            throw_if(
+                is_file($directory),
+                sprintf('Unable to create the "%s" directory. A similar named file exists.', $directory),
+                Exception::class
+            );
 
-            throw new Exception(sprintf('Unable to create the "%s" directory.', $directory));
+            throw_anyway(sprintf('Unable to create the "%s" directory.', $directory), Exception::class);
         } elseif (!is_writable($directory)) {
-            throw new Exception(sprintf('Unable to write in the "%s" directory.', $directory));
+            throw_anyway(sprintf('Unable to write in the "%s" directory.', $directory), Exception::class);
         }
 
         $target = rtrim($directory, '/\\')
