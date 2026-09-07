@@ -12,6 +12,7 @@ namespace Framework;
 defined('ABSPATH') || exit;
 
 use Closure;
+use Exception;
 use Faker\Factory;
 use Faker\Generator;
 use Framework\Application;
@@ -1058,5 +1059,61 @@ if (!function_exists('Framework\message')) {
     function message($key, ...$args)
     {
         return app()->make(MessagesBag::class)->get($key, ...$args);
+    }
+}
+
+if (!function_exists('Framework\throw_anyway')) {
+    /**
+     * Throw an exception unconditionally
+     *
+     * @param string $message The message to attach
+     * @param string $exception_class The exception class
+     * @param array $params The rest of the params
+     * 
+     * @throws Exception
+     */
+    function throw_anyway(string $message = "", $exception_class = Exception::class, ...$params)
+    {
+        throw new $exception_class($message, ...$params);
+    }
+}
+
+if (!function_exists('Framework\throw_if')) {
+    /**
+     * Throw an exception if the condition is satisfied.
+     * 
+     * @param bool $condition The condition to satisfy
+     * @param string $message The message to show with the exception
+     * @param string $exception_class The exception class
+     * 
+     * @throws Exception
+     *
+     * @since  1.0.0
+     */
+    function throw_if(bool $condition, string $message = "", $exception_class = Exception::class)
+    {
+        if ($condition) {
+            throw_anyway($message, $exception_class);
+        }
+    }
+}
+
+if (!function_exists('Framework\throw_unless')) {
+    /**
+     * Throw an exception if the condition is satisfied.
+     * 
+     * @param bool $condition The condition to satisfy
+     * @param string $message The message to show with the exception
+     * @param string $exception_class The exception class
+     * 
+     * @throws Exception
+     *
+     * @since  1.0.0
+     */
+    function throw_unless(bool $condition, string $message = "", $exception_class = Exception::class)
+    {
+        if (!$condition) {
+            throw_anyway($message, $exception_class);
+        }
     }
 }
