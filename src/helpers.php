@@ -1085,15 +1085,16 @@ if (!function_exists('Framework\throw_if')) {
      * @param bool $condition The condition to satisfy
      * @param string $message The message to show with the exception
      * @param string $exception_class The exception class
+     * @param array $params The other params
      * 
      * @throws Exception
      *
      * @since  1.0.0
      */
-    function throw_if(bool $condition, string $message = "", $exception_class = Exception::class)
+    function throw_if(bool $condition, string $message = "", $exception_class = Exception::class, ...$params)
     {
         if ($condition) {
-            throw_anyway($message, $exception_class);
+            throw_anyway($message, $exception_class, ...$params);
         }
     }
 }
@@ -1105,15 +1106,16 @@ if (!function_exists('Framework\throw_unless')) {
      * @param bool $condition The condition to satisfy
      * @param string $message The message to show with the exception
      * @param string $exception_class The exception class
+     * @param array $params The other params
      * 
      * @throws Exception
      *
      * @since  1.0.0
      */
-    function throw_unless(bool $condition, string $message = "", $exception_class = Exception::class)
+    function throw_unless(bool $condition, string $message = "", $exception_class = Exception::class, ...$params)
     {
         if (!$condition) {
-            throw_anyway($message, $exception_class);
+            throw_anyway($message, $exception_class, ...$params);
         }
     }
 }
