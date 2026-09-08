@@ -28,6 +28,8 @@ use JsonSerializable;
 
 
 use function Framework\Polyfill\array_last;
+use function Framework\throw_if;
+use function Framework\throw_unless;
 use function Framework\value;
 
 // phpcs:disable Generic.Commenting.DocComment.TagValueIndent
@@ -532,9 +534,7 @@ class Collection implements ArrayAccess, Countable, Iterator, Arrayable, Jsonabl
             return value($default);
         }
 
-        if (!$key instanceof Closure) {
-            throw new InvalidArgumentException('The key must be a Closure.');
-        }
+        throw_unless($key instanceof Closure, 'The key must be a Closure.', InvalidArgumentException::class);
 
         return Arr::first($this->items, $key, $default);
     }
@@ -762,9 +762,7 @@ class Collection implements ArrayAccess, Countable, Iterator, Arrayable, Jsonabl
      */
     public function only($keys)
     {
-        if (empty($keys)) {
-            throw new InvalidArgumentException('You must pass at least one key to the only method.');
-        }
+        throw_if(empty($keys), 'You must pass at least one key to the only method.', InvalidArgumentException::class);
 
         $keys = is_array($keys) ? $keys : func_get_args();
 

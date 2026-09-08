@@ -15,6 +15,7 @@ use InvalidArgumentException;
 
 use function Framework\deep_get;
 use function Framework\Polyfill\array_first;
+use function Framework\throw_if;
 
 defined('ABSPATH') || exit;
 
@@ -75,9 +76,11 @@ class RequiredUnlessRule extends ValidationRule
 
         if (!$other instanceof Closure) {
             $other = function () use ($other, $value) {
-                if (empty($value)) {
-                    throw new InvalidArgumentException('The second argument must be a non-empty string.');
-                }
+                throw_if(
+                    empty($value),
+                    'The second argument must be a non-empty string.',
+                    InvalidArgumentException::class
+                );
 
                 $data = deep_get($this->data, (string) $other);
 

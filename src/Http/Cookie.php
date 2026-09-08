@@ -450,9 +450,7 @@ class Cookie
      */
     protected function validate_name(string $name)
     {
-        if ($name === '') {
-            throw new InvalidArgumentException('The cookie name cannot be empty.');
-        }
+        throw_if($name === '', 'The cookie name cannot be empty.', InvalidArgumentException::class);
 
         throw_if(
             strpbrk($name, static::RESERVED_CHARACTERS) !== false,

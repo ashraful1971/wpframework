@@ -76,9 +76,11 @@ class SectionManager
      */
     public function end()
     {
-        if ($this->active_section === null) {
-            throw new RuntimeException('Cannot end section: no section is being captured.');
-        }
+        throw_if(
+            $this->active_section === null,
+            'Cannot end section: no section is being captured.',
+            RuntimeException::class
+        );
 
         $this->sections[$this->active_section] = (string) ob_get_clean();
         $this->active_section = null;

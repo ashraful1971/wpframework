@@ -14,9 +14,9 @@ defined('ABSPATH') || exit;
 
 use Framework\Wordpress\Constants\MenuTypes;
 use Framework\Supports\Arr;
-use Exception;
 
 use function Framework\collection;
+use function Framework\throw_if;
 
 class Menu
 {
@@ -113,9 +113,7 @@ class Menu
      */
     public function __construct()
     {
-        if (!$this->check_required_properties()) {
-            throw new Exception('Missing required properties for making a menu item');
-        }
+        throw_if(!$this->check_required_properties(), 'Missing required properties for making a menu item');
     }
 
     /**

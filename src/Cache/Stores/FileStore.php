@@ -133,11 +133,11 @@ class FileStore implements Store, CacheEntryProvider
         if (!function_exists('get_filesystem_method')) {
             $include = ABSPATH . 'wp-admin/includes/file.php';
 
-            if (!is_readable($include)) {
-                throw new StoreUnavailableException(
-                    'The file cache store cannot determine the filesystem method on this host.'
-                );
-            }
+            throw_if(
+                !is_readable($include),
+                'The file cache store cannot determine the filesystem method on this host.',
+                StoreUnavailableException::class
+            );
 
             require_once $include;
         }

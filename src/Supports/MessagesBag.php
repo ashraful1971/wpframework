@@ -12,6 +12,7 @@ use InvalidArgumentException;
 
 use function Framework\app;
 use function Framework\config;
+use function Framework\throw_if;
 
 defined('ABSPATH') || exit;
 
@@ -233,9 +234,7 @@ class MessagesBag
         $args = !empty($args) ? Arr::flatten($args) : [];
         $message = Arr::get($this->messages(), $key, '');
 
-        if (is_array($message)) {
-            throw new InvalidArgumentException('You may forget to define the full path of the message key.');
-        }
+        throw_if(is_array($message), 'You may forget to define the full path of the message key.', InvalidArgumentException::class);
 
         return vsprintf($message, $args);
     }

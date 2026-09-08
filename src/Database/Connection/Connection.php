@@ -347,16 +347,12 @@ class Connection
         try {
             $result = $callback($query, $bindings);
 
-            if (!empty($this->db->last_error)) {
-                throw new Exception($this->db->last_error);
-            }
+            throw_if(!empty($this->db->last_error), $this->db->last_error ?? '');
 
-            if ($this->db->rows_affected < 0) {
-                throw new Exception(sprintf(
-                    'Query failed: %s',
-                    $query
-                ), 500);
-            }
+            throw_if($this->db->rows_affected < 0, sprintf(
+                'Query failed: %s',
+                $query
+            ), Exception::class, 500);
 
             return $result;
         } catch (Exception $error) {
@@ -595,15 +591,19 @@ class Connection
         } elseif (is_bool($value)) {
             return $this->escape_bool($value);
         } elseif (is_array($value)) {
-            throw new RuntimeException('Database connection does not support escaping arrays.');
+            throw_anyway('Database connection does not support escaping arrays.', RuntimeException::class);
         } else {
-            if (str_contains($value, "\00")) {
-                throw new RuntimeException('Strings with null bytes cannot be escaped.');
-            }
+            throw_if(
+                str_contains($value, "\00"),
+                'Strings with null bytes cannot be escaped.',
+                RuntimeException::class
+            );
 
-            if (preg_match('//u', $value) === false) {
-                throw new RuntimeException('Strings with invalid UTF-8 byte sequences cannot be escaped.');
-            }
+            throw_if(
+                preg_match('//u', $value) === false,
+                'Strings with invalid UTF-8 byte sequences cannot be escaped.',
+                RuntimeException::class
+            );
 
             return sprintf("'%s'", esc_sql($value));
         }

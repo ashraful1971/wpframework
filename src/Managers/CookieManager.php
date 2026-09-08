@@ -17,6 +17,7 @@ use InvalidArgumentException;
 
 use function Framework\app;
 use function Framework\config;
+use function Framework\throw_if;
 
 class CookieManager
 {
@@ -167,9 +168,11 @@ class CookieManager
      */
     public function queue(...$parameters)
     {
-        if (empty($parameters)) {
-            throw new InvalidArgumentException('A cookie instance or a cookie name is required to queue a cookie.');
-        }
+        throw_if(
+            empty($parameters),
+            'A cookie instance or a cookie name is required to queue a cookie.',
+            InvalidArgumentException::class
+        );
 
         $cookie = $parameters[0] instanceof Cookie
             ? $parameters[0]

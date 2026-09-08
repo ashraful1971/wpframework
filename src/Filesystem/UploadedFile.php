@@ -279,7 +279,7 @@ class UploadedFile extends File implements JsonSerializable
                     'upload.move_failed',
                     $this->getPathname(),
                     $target,
-                    strip_tags($error ?? '')
+                    wp_strip_all_tags($error ?? '')
                 ),
                 Exception::class
             );
