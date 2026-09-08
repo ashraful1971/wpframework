@@ -24,7 +24,6 @@ use Framework\Supports\Arr;
 use Framework\Supports\Traits\Macroable;
 use Framework\Database\Concerns\GuardAttributes;
 use Framework\Supports\Facades\Date;
-use Exception;
 use Framework\Database\Concerns\HasTimestamps;
 use Framework\Database\Connection\Connection;
 use Framework\Exceptions\MassAssignmentException;
@@ -34,6 +33,7 @@ use ReflectionClass;
 use function Framework\app;
 use function Framework\Polyfill\str_contains;
 use function Framework\throw_anyway;
+use function Framework\throw_if;
 
 abstract class Model implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
 {
@@ -763,9 +763,7 @@ abstract class Model implements Arrayable, Jsonable, ArrayAccess, JsonSerializab
     {
         $this->merge_attributes_from_cached_class_casts();
 
-        if (is_null($this->get_primary_key())) {
-            throw new Exception('No primary key defined on model.');
-        }
+        throw_if(is_null($this->get_primary_key()), 'No primary key defined on model.');
 
         if (!$this->exists) {
             return false;

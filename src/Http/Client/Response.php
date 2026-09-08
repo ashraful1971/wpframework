@@ -14,9 +14,9 @@ defined('ABSPATH') || exit;
 
 use ArrayAccess;
 use Framework\Concerns\DeepGettable;
-use Exception;
 
 use function Framework\collection;
+use function Framework\throw_anyway;
 
 defined('ABSPATH') || exit;
 
@@ -309,7 +309,7 @@ class Response implements ArrayAccess
      */
     public function offsetSet($offset, $value): void
     {
-        throw new Exception('Response data may not be mutated using array access.');
+        throw_anyway('Response data may not be mutated using array access.');
     }
 
     /**
@@ -325,7 +325,7 @@ class Response implements ArrayAccess
      */
     public function offsetUnset($offset): void
     {
-        throw new Exception('Response data may not be mutated using array access.');
+        throw_anyway('Response data may not be mutated using array access.');
     }
 
     /**

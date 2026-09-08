@@ -30,6 +30,7 @@ use function Framework\Polyfill\array_find_key;
 use function Framework\Polyfill\array_first;
 use function Framework\Polyfill\array_last;
 use function Framework\Polyfill\str_contains;
+use function Framework\throw_anyway;
 use function Framework\value;
 
 class Arr
@@ -61,7 +62,7 @@ class Arr
             case is_object($items):
                 return (array) $items;
             default:
-                throw new InvalidArgumentException('Items cannot be represented by a scalar value.');
+                throw_anyway('Items cannot be represented by a scalar value.', InvalidArgumentException::class);
         }
     }
 

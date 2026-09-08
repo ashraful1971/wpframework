@@ -20,6 +20,8 @@ use Framework\Database\Query\Model;
 use Framework\Database\Query\QueryBuilder;
 use Framework\Collections\Collection as BaseCollection;
 
+use function Framework\throw_if;
+
 abstract class Relation
 {
     /**
@@ -539,11 +541,11 @@ abstract class Relation
      */
     public function __call($method, $parameters)
     {
-        if (!method_exists($this->query, $method)) {
-            throw new BadMethodCallException(
-                sprintf('Method %s::%s does not exist.', QueryBuilder::class, esc_html($method))
-            );
-        }
+        throw_if(
+            !method_exists($this->query, $method),
+            sprintf('Method %s::%s does not exist.', QueryBuilder::class, esc_html($method)),
+            BadMethodCallException::class
+        );
 
         return $this->query->$method(...$parameters);
     }

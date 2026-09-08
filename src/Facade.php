@@ -14,6 +14,7 @@ defined('ABSPATH') || exit;
 use RuntimeException;
 
 use function Framework\app;
+use function Framework\throw_if;
 
 abstract class Facade
 {
@@ -97,9 +98,7 @@ abstract class Facade
     {
         $instance = static::resolved_facade_instance(static::get_accessor());
 
-        if (!$instance) {
-            throw new RuntimeException('A facade has not been set.');
-        }
+        throw_if(!$instance, 'A facade has not been set.', RuntimeException::class);
 
         return $instance->$method(...$arguments);
     }

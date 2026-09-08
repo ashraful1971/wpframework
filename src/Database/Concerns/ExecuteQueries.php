@@ -19,6 +19,7 @@ use InvalidArgumentException;
 use RuntimeException;
 
 use function Framework\collection;
+use function Framework\throw_if;
 
 trait ExecuteQueries
 {
@@ -222,9 +223,7 @@ trait ExecuteQueries
 
             $last_id = is_null($last_result) ? null : $last_result[$alias];
 
-            if (is_null($last_id)) {
-                throw new RuntimeException('No more results found');
-            }
+            throw_if(is_null($last_id), 'No more results found', RuntimeException::class);
 
             unset($results);
 
@@ -247,9 +246,7 @@ trait ExecuteQueries
      */
     public function lazy($chunk_size = 1000)
     {
-        if ($chunk_size < 1) {
-            throw new InvalidArgumentException('Chunk size should be at least 1');
-        }
+        throw_if($chunk_size < 1, 'Chunk size should be at least 1', InvalidArgumentException::class);
 
         $this->enforce_order_by_primary_key();
 
@@ -317,9 +314,7 @@ trait ExecuteQueries
      */
     public function ordered_lazy_by_id($chunk_size = 1000, $column = null, $alias = null, $descending = false)
     {
-        if ($chunk_size < 1) {
-            throw new InvalidArgumentException('Chunk size should be at least 1');
-        }
+        throw_if($chunk_size < 1, 'Chunk size should be at least 1', InvalidArgumentException::class);
 
         $column ??= $this->default_key_name();
         $alias ??= $column;
@@ -350,9 +345,7 @@ trait ExecuteQueries
 
             $last_id = $results->last()[$alias];
 
-            if (is_null($last_id)) {
-                throw new RuntimeException('The lazy_by_id operation was aborted.');
-            }
+            throw_if(is_null($last_id), 'The lazy_by_id operation was aborted.', RuntimeException::class);
         }
     }
 

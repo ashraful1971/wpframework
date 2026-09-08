@@ -26,6 +26,7 @@ use InvalidArgumentException;
 use function Framework\app;
 use function Framework\config;
 use function Framework\message;
+use function Framework\throw_if;
 use function Framework\throw_unless;
 use function Framework\user;
 use function Framework\value;
@@ -836,9 +837,7 @@ class Request implements RequestContract, Arrayable
      */
     public function route($key, $default = null)
     {
-        if (empty($key)) {
-            throw new InvalidArgumentException('The route key is required.');
-        }
+        throw_if(empty($key), 'The route key is required.', InvalidArgumentException::class);
 
         return Arr::get($this->route_params, $key, $default);
     }

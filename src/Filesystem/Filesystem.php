@@ -17,6 +17,7 @@ use Framework\Exceptions\NotFoundException;
 use Framework\Sanitizer;
 use Framework\Supports\Traits\Macroable;
 use Framework\Wordpress\Constants\Capabilities;
+use RuntimeException;
 use WP_Filesystem_Base;
 
 use function Framework\Polyfill\str_starts_with;
@@ -58,9 +59,11 @@ class Filesystem
 
         $this->filesystem = $wp_filesystem;
 
-        if (!$this->filesystem instanceof WP_Filesystem_Base) {
-            throw new \RuntimeException('WordPress filesystem is not available.');
-        }
+        throw_unless(
+            $this->filesystem instanceof WP_Filesystem_Base,
+            'WordPress filesystem is not available.',
+            RuntimeException::class
+        );
     }
 
     /**

@@ -94,9 +94,7 @@ class MultipartStream
         $stream = collection();
 
         foreach ($data as $item) {
-            if (!is_array($item)) {
-                throw new UnexpectedValueException('Invalid data format');
-            }
+            throw_unless(is_array($item), 'Invalid data format', UnexpectedValueException::class);
 
             $stream->push($this->create_stream_item($item));
         }

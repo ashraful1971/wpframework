@@ -1061,9 +1061,11 @@ class Application extends Container
             $this->base_path('composer.json')
         );
 
-        if (empty($composer['autoload']['psr-4'])) {
-            throw new RuntimeException('The composer must have a PSR-4 autoload configuration.');
-        }
+        throw_if(
+            empty($composer['autoload']['psr-4']),
+            'The composer must have a PSR-4 autoload configuration.',
+            RuntimeException::class
+        );
 
         $resolved_path = $this->base_path($relative_path);
         $target = realpath($resolved_path);

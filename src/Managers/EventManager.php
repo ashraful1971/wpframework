@@ -163,12 +163,10 @@ class EventManager
      */
     protected function resolve($listener, $event)
     {
-        if (!is_subclass_of($listener, Listener::class)) {
-            throw new InvalidArgumentException(sprintf(
-                'The listener [%s] must be a subclass of [%s]',
-                Listener::class
-            ));
-        }
+        throw_unless(is_subclass_of($listener, Listener::class), sprintf(
+            'The listener [%s] must be a subclass of [%s]',
+            Listener::class
+        ), InvalidArgumentException::class);
 
         return (new $listener())->handle($event);
     }

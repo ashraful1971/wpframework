@@ -1008,9 +1008,11 @@ class QueryBuilder
             'boolean'
         );
 
-        if (count($values) !== count(Arr::flatten($values, 1))) {
-            throw new InvalidArgumentException('Nested array of values is not allowed');
-        }
+        throw_if(
+            count($values) !== count(Arr::flatten($values, 1)),
+            'Nested array of values is not allowed',
+            InvalidArgumentException::class
+        );
 
         $this->add_bindings($this->clean_bindings($values), 'where');
 
@@ -2256,9 +2258,11 @@ class QueryBuilder
 
         $direction = strtolower($direction);
 
-        if (!in_array($direction, ['asc', 'desc'], true)) {
-            throw new InvalidArgumentException('Order direction must be either "asc" or "desc".');
-        }
+        throw_unless(
+            in_array($direction, ['asc', 'desc'], true),
+            'Order direction must be either "asc" or "desc".',
+            InvalidArgumentException::class
+        );
 
         $this->orders[] = [
             'column' => $column,
@@ -3481,9 +3485,11 @@ class QueryBuilder
      */
     public function increment($column, $amount = 1, array $extra = [])
     {
-        if (!is_numeric($amount)) {
-            throw new InvalidArgumentException('Non-numeric value passed to increment method.');
-        }
+        throw_unless(
+            is_numeric($amount),
+            'Non-numeric value passed to increment method.',
+            InvalidArgumentException::class
+        );
 
         return $this->increment_each([$column => $amount], $extra);
     }
@@ -3503,11 +3509,16 @@ class QueryBuilder
     public function increment_each(array $columns, array $extra = [])
     {
         foreach ($columns as $column => $amount) {
-            if (!is_numeric($amount)) {
-                throw new InvalidArgumentException('Non-numeric value passed to increment method.');
-            } elseif (!is_string($column)) {
-                throw new InvalidArgumentException('Invalid column provided to increment method.');
-            }
+            throw_unless(
+                is_numeric($amount),
+                'Non-numeric value passed to increment method.',
+                InvalidArgumentException::class
+            );
+            throw_unless(
+                is_string($column),
+                'Invalid column provided to increment method.',
+                InvalidArgumentException::class
+            );
 
             $columns[$column] = $this->raw(
                 sprintf(
@@ -3536,9 +3547,11 @@ class QueryBuilder
      */
     public function decrement($column, $amount = 1, array $extra = [])
     {
-        if (!is_numeric($amount)) {
-            throw new InvalidArgumentException('Non-numeric value passed to increment method.');
-        }
+        throw_unless(
+            is_numeric($amount),
+            'Non-numeric value passed to increment method.',
+            InvalidArgumentException::class
+        );
 
         return $this->decrement_each([$column => $amount], $extra);
     }
@@ -3558,11 +3571,16 @@ class QueryBuilder
     public function decrement_each(array $columns, array $extra = [])
     {
         foreach ($columns as $column => $amount) {
-            if (!is_numeric($amount)) {
-                throw new InvalidArgumentException('Non-numeric value passed to increment method.');
-            } elseif (!is_string($column)) {
-                throw new InvalidArgumentException('Invalid column provided to increment method.');
-            }
+            throw_unless(
+                is_numeric($amount),
+                'Non-numeric value passed to increment method.',
+                InvalidArgumentException::class
+            );
+            throw_unless(
+                is_string($column),
+                'Invalid column provided to increment method.',
+                InvalidArgumentException::class
+            );
 
             $columns[$column] = $this->raw(
                 sprintf(
@@ -3594,9 +3612,7 @@ class QueryBuilder
 
         $count = $result->count();
 
-        if ($count === 0) {
-            throw new RecordNotFoundException();
-        }
+        throw_if($count === 0, '', RecordNotFoundException::class);
 
         throw_if($count > 1, $count, MultipleRecordsFoundException::class);
 
@@ -4161,9 +4177,7 @@ class QueryBuilder
         } elseif (is_string($query)) {
             return [$query, []];
         } else {
-            throw new InvalidArgumentException(
-                'Invalid subquery provided'
-            );
+            throw_anyway('Invalid subquery provided', InvalidArgumentException::class);
         }
     }
 
@@ -4217,7 +4231,7 @@ class QueryBuilder
         if ($use_default) {
             return [$operator, '='];
         } elseif ($this->is_invalid_operator_and_value($operator, $value)) {
-            throw new InvalidArgumentException('Illegal operator and value combination.');
+            throw_anyway('Illegal operator and value combination.', InvalidArgumentException::class);
         }
 
         return [$value, $operator];
@@ -4344,8 +4358,9 @@ class QueryBuilder
             return $this->call_named_scope($method, $parameters);
         }
 
-        throw new BadMethodCallException(
-            sprintf('Method %s::%s does not exist.', QueryBuilder::class, esc_html($method))
+        throw_anyway(
+            sprintf('Method %s::%s does not exist.', QueryBuilder::class, esc_html($method)),
+            BadMethodCallException::class
         );
     }
 }

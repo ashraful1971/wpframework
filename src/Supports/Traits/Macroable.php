@@ -14,6 +14,8 @@ defined('ABSPATH') || exit;
 
 use BadMethodCallException;
 
+use function Framework\throw_anyway;
+
 trait Macroable
 {
     /**
@@ -75,8 +77,9 @@ trait Macroable
             );
         }
 
-        throw new BadMethodCallException(
-            sprintf('Method %s::%s does not exist.', static::class, esc_html($method))
+        throw_anyway(
+            sprintf('Method %s::%s does not exist.', static::class, esc_html($method)),
+            BadMethodCallException::class
         );
     }
 
@@ -101,8 +104,9 @@ trait Macroable
             );
         }
 
-        throw new BadMethodCallException(
-            sprintf('Method %s::%s does not exist.', static::class, esc_html($method))
+        throw_anyway(
+            sprintf('Method %s::%s does not exist.', static::class, esc_html($method)),
+            BadMethodCallException::class
         );
     }
 }

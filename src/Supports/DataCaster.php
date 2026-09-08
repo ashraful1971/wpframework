@@ -12,7 +12,7 @@ namespace Framework\Supports;
 
 defined('ABSPATH') || exit;
 
-use Exception;
+use function Framework\throw_if;
 
 class DataCaster
 {
@@ -85,9 +85,7 @@ class DataCaster
      */
     public static function cast_data($data, $map)
     {
-        if (!is_array($data) && !is_object($data)) {
-            throw new Exception('Data must be either an array or an object');
-        }
+        throw_if(!is_array($data) && !is_object($data), 'Data must be either an array or an object');
 
         if (is_object($data)) {
             foreach ($map as $key => $type) {

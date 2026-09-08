@@ -15,8 +15,9 @@ use Framework\Contracts\CastAttribute;
 use Framework\Contracts\Request;
 use Framework\Contracts\Support\Arrayable;
 use Framework\Exceptions\ValidationException;
-use Exception;
 use JsonSerializable;
+
+use function Framework\throw_anyway;
 
 class DTO implements JsonSerializable, Arrayable
 {
@@ -356,7 +357,7 @@ class DTO implements JsonSerializable, Arrayable
                 return $cast();
             }
 
-            throw new Exception('Cast must be an instance of ' . CastAttribute::class . ' or a callable');
+            throw_anyway('Cast must be an instance of ' . CastAttribute::class . ' or a callable');
         }
 
         $segment = array_shift($key_segments);

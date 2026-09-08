@@ -13,7 +13,6 @@ namespace Framework;
 defined('ABSPATH') || exit;
 
 use Closure;
-use Exception;
 use ReflectionClass;
 use ReflectionParameter;
 use TInstance;
@@ -340,12 +339,10 @@ class Container implements ContainerContract
         try {
             $reflector = new ReflectionClass($class);
 
-            if (!$reflector->isInstantiable()) {
-                throw new Exception(sprintf(
-                    'Class "%s" is not instantiable.',
-                    $class
-                ));
-            }
+            throw_if(!$reflector->isInstantiable(), sprintf(
+                'Class "%s" is not instantiable.',
+                $class
+            ));
 
             $constructor = $reflector->getConstructor();
 
