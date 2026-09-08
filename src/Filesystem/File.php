@@ -78,7 +78,7 @@ class File extends SplFileInfo
                 'Could not move the file "%s" to "%s" (%s).',
                 $this->getPathname(),
                 $target,
-                strip_tags($error ?? '')
+                wp_strip_all_tags($error ?? '')
             ),
             Exception::class
         );
