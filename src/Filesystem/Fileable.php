@@ -10,6 +10,8 @@ namespace Framework\Filesystem;
 
 defined('ABSPATH') || exit;
 
+use function Framework\throw_unless;
+
 /**
  * Fileable interface for filesystem operations.
  *
@@ -115,9 +117,11 @@ class Fileable
     {
         $filesystem = new Filesystem();
 
-        if (!method_exists($filesystem, $method)) {
-            throw new \BadMethodCallException("Method [$method] does not exist on [Filesystem].");
-        }
+        throw_unless(
+            method_exists($filesystem, $method),
+            "Method [$method] does not exist on [Filesystem].",
+            \BadMethodCallException::class
+        );
 
         return $filesystem->{$method}(...$this->parameters($method, $parameters));
     }

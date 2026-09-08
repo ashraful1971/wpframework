@@ -18,6 +18,10 @@ use Framework\Database\Schema\Definitions\ForeignKeyDefinition;
 use Exception;
 use Framework\Database\Connection\Connection;
 
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+use function Framework\throw_unless;
+
 class Compiler
 {
     /**
@@ -340,14 +344,14 @@ class Compiler
             $this->compile_alter_drops($structure)
         );
 
-        if (empty($clauses)) {
-            throw new Exception(
-                sprintf(
-                    'No changes were defined for table [%s].',
-                    $structure->get_table()
-                )
-            );
-        }
+        throw_if(
+            empty($clauses),
+            sprintf(
+                'No changes were defined for table [%s].',
+                $structure->get_table()
+            ),
+            Exception::class
+        );
 
         return sprintf(
             'ALTER TABLE %s %s',
@@ -521,12 +525,13 @@ class Compiler
             }
         }
 
-        throw new Exception(
+        throw_anyway(
             sprintf(
                 'Column [%s] does not exist on table [%s].',
                 $column,
                 $structure->get_table()
-            )
+            ),
+            Exception::class
         );
     }
 
@@ -938,9 +943,11 @@ class Compiler
         $column_type = $column->type;
         $getter_method = 'type_' . strtolower($column_type);
 
-        if (!method_exists($this, $getter_method)) {
-            throw new Exception(sprintf('Method %s not found.', $getter_method));
-        }
+        throw_unless(
+            method_exists($this, $getter_method),
+            sprintf('Method %s not found.', $getter_method),
+            Exception::class
+        );
 
         return $this->$getter_method($column);
     }

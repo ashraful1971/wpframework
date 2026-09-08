@@ -18,6 +18,8 @@ use Framework\Validation\ValidationRule;
 use Framework\Supports\Str;
 use InvalidArgumentException;
 
+use function Framework\throw_anyway;
+
 
 /**
  * File rule class.
@@ -256,7 +258,7 @@ class FileRule extends ValidationRule
             case Str::ends_with($size, 'tb'):
                 return $value * 1024 * 1024 * 1024;
             default:
-                throw new InvalidArgumentException('Invalid file size: ' . $size);
+                throw_anyway('Invalid file size: ' . $size, InvalidArgumentException::class);
         }
     }
 
@@ -323,7 +325,7 @@ class FileRule extends ValidationRule
             return new FilesystemFile($value, false);
         }
 
-        throw new InvalidArgumentException('Invalid file value: ' . $value);
+        throw_anyway('Invalid file value: ' . $value, InvalidArgumentException::class);
     }
 
 

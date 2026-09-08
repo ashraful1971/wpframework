@@ -23,6 +23,7 @@ use Framework\Exceptions\InvalidMiddlewareException;
 use Framework\Exceptions\InvalidRoutActionException;
 use Framework\Exceptions\ModelNotFoundException;
 use Framework\Http\Request;
+use Framework\Http\Superglobals;
 use Framework\Routing\CurrentRoute;
 use Framework\Routing\RouteParser;
 use Framework\Routing\SiteRouter;
@@ -39,6 +40,8 @@ use WP_REST_Request;
 use function Framework\app;
 use function Framework\Polyfill\array_first;
 use function Framework\Polyfill\array_last;
+use function Framework\throw_if;
+use function Framework\throw_unless;
 
 class Route
 {
@@ -1198,19 +1201,21 @@ class Route
             return $this->get_cached($abstract);
         }
 
-        if (in_array($abstract, $resolving, true)) {
-            throw new Exception(sprintf('Circular dependency detected for class "%s".', $abstract));
-        }
+        throw_if(
+            in_array($abstract, $resolving, true),
+            sprintf('Circular dependency detected for class "%s".', $abstract),
+            Exception::class
+        );
 
-        if (!class_exists($abstract)) {
-            throw new Exception(sprintf('Class "%s" does not exist.', $abstract));
-        }
+        throw_unless(class_exists($abstract), sprintf('Class "%s" does not exist.', $abstract));
 
         $reflector = new ReflectionClass($abstract);
 
-        if ($reflector->isAbstract()) {
-            throw new Exception(sprintf('Class "%s" is abstract and cannot be instantiated.', $abstract));
-        }
+        throw_if(
+            $reflector->isAbstract(),
+            sprintf('Class "%s" is abstract and cannot be instantiated.', $abstract),
+            Exception::class
+        );
 
         $constructor = $reflector->getConstructor();
 
@@ -1218,11 +1223,11 @@ class Route
             return new $abstract();
         }
 
-        if (!$constructor->isPublic()) {
-            throw new Exception(
-                sprintf('Class "%s" has a non-public constructor and cannot be instantiated.', $abstract)
-            );
-        }
+        throw_unless(
+            $constructor->isPublic(),
+            sprintf('Class "%s" has a non-public constructor and cannot be instantiated.', $abstract),
+            Exception::class
+        );
 
         $dependencies = [];
         $resolving[] = $abstract;
@@ -1230,23 +1235,23 @@ class Route
         foreach ($constructor->getParameters() as $parameter) {
             $type = $parameter->getType();
 
-            if (!$type) {
-                throw new Exception(
-                    sprintf(
-                        'Parameter "%s" is missing a type hint in the constructor. Please add a class type hint.',
-                        $parameter->getName()
-                    )
-                );
-            }
+            throw_unless(
+                $type !== null,
+                sprintf(
+                    'Parameter "%s" is missing a type hint in the constructor. Please add a class type hint.',
+                    $parameter->getName()
+                ),
+                Exception::class
+            );
 
-            if ($type->isBuiltin()) {
-                throw new Exception(
-                    sprintf(
-                        'Parameter "%s" must be a class type, not a built-in type. Please specify a valid class dependency.', // phpcs:ignore Generic.Files.LineLength.TooLong
-                        $parameter->getName()
-                    )
-                );
-            }
+            throw_if(
+                $type->isBuiltin(),
+                sprintf(
+                    'Parameter "%s" must be a class type, not a built-in type. Please specify a valid class dependency.', // phpcs:ignore Generic.Files.LineLength.TooLong
+                    $parameter->getName()
+                ),
+                Exception::class
+            );
 
             $dependencies[] = $this->is_cached($type->getName())
                 ? $this->get_cached($type->getName())
@@ -1276,9 +1281,11 @@ class Route
     {
         $method_reflection = new ReflectionMethod($abstract, $method);
 
-        if (!$method_reflection->isPublic()) {
-            throw new Exception(sprintf('Method "%s" is not public and cannot be called.', $method));
-        }
+        throw_unless(
+            $method_reflection->isPublic(),
+            sprintf('Method "%s" is not public and cannot be called.', $method),
+            Exception::class
+        );
 
         $dependencies = $this->categorize_parameters($method_reflection->getParameters());
         $this->assert_single_request_dependency($dependencies, $method);
@@ -1361,17 +1368,17 @@ class Route
      */
     protected function assert_single_request_dependency(array $dependencies, string $handler)
     {
-        if (count($dependencies['requests']) < 1) {
-            throw new InvalidArgumentException(
-                sprintf('The method "%s" must have at least one request dependency.', $handler)
-            );
-        }
+        throw_if(
+            count($dependencies['requests']) < 1,
+            sprintf('The method "%s" must have at least one request dependency.', $handler),
+            InvalidArgumentException::class
+        );
 
-        if (count($dependencies['requests']) > 1) {
-            throw new InvalidArgumentException(
-                sprintf('The method "%s" must have only one request dependency.', $handler)
-            );
-        }
+        throw_if(
+            count($dependencies['requests']) > 1,
+            sprintf('The method "%s" must have only one request dependency.', $handler),
+            InvalidArgumentException::class
+        );
     }
 
     /**
@@ -1714,17 +1721,12 @@ class Route
     {
         $request_class = $this->resolve_request_class();
         $request = app()->make($request_class)->make_from_http(
-            // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-            $_GET,
-            // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-            $_POST,
-            // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-            $_FILES,
-            // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-            $_SERVER,
+            Superglobals::query(),
+            Superglobals::post(),
+            Superglobals::files(),
+            Superglobals::server(),
             $route_params,
-            // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-            $_COOKIE
+            Superglobals::cookie()
         );
 
         $request->authorize_request();
@@ -1895,31 +1897,33 @@ class Route
      */
     protected function resolve_controller(Request $request)
     {
-        if (!is_array($this->action)) {
-            throw new InvalidRoutActionException(
-                sprintf('Invalid method registered for the route %s', $this->endpoint)
-            );
-        }
+        throw_unless(
+            is_array($this->action),
+            sprintf('Invalid method registered for the route %s', $this->endpoint),
+            InvalidRoutActionException::class
+        );
 
-        if (count($this->action) !== 2) {
-            throw new InvalidRoutActionException(
-                sprintf('Invalid controller syntax for the route %s', $this->endpoint)
-            );
-        }
+        throw_if(
+            count($this->action) !== 2,
+            sprintf('Invalid controller syntax for the route %s', $this->endpoint),
+            InvalidRoutActionException::class
+        );
 
         [$controller, $method] = $this->action;
 
-        if (!class_exists($controller)) {
-            throw new InvalidRoutActionException(sprintf('Controller %s not found', $controller));
-        }
+        throw_unless(
+            class_exists($controller),
+            sprintf('Controller %s not found', $controller),
+            InvalidRoutActionException::class
+        );
 
         $controller_instance = $this->make($controller);
 
-        if (!method_exists($controller_instance, $method)) {
-            throw new InvalidRoutActionException(
-                sprintf('The method %s is missing in the controller %s', $method, $controller)
-            );
-        }
+        throw_unless(
+            method_exists($controller_instance, $method),
+            sprintf('The method %s is missing in the controller %s', $method, $controller),
+            InvalidRoutActionException::class
+        );
 
         $dependencies = $this->resolve_method_dependencies($controller_instance, $method);
         $first_request = array_first($dependencies['requests']);
@@ -1952,11 +1956,11 @@ class Route
                 return function ($request) use ($next, $middleware) {
                     [$class, $parameters] = static::parse_middleware($middleware);
 
-                    if (!is_subclass_of($class, Middleware::class)) {
-                        throw new InvalidArgumentException(
-                            sprintf('Middleware %s must implement the %s interface.', $class, Middleware::class)
-                        );
-                    }
+                    throw_unless(
+                        is_subclass_of($class, Middleware::class),
+                        sprintf('Middleware %s must implement the %s interface.', $class, Middleware::class),
+                        InvalidArgumentException::class
+                    );
 
                     return (new $class())->handle($request, $next, ...$parameters);
                 };
@@ -2030,11 +2034,11 @@ class Route
             return [static::$middleware_aliases[$name], $parameters];
         }
 
-        if (!class_exists($name)) {
-            throw new InvalidMiddlewareException(
-                sprintf('Middleware [%s] is not a registered alias and is not a resolvable class.', $name)
-            );
-        }
+        throw_unless(
+            class_exists($name),
+            sprintf('Middleware [%s] is not a registered alias and is not a resolvable class.', $name),
+            InvalidMiddlewareException::class
+        );
 
         return [$name, $parameters];
     }

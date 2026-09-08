@@ -15,6 +15,8 @@ defined('ABSPATH') || exit;
 
 use RuntimeException;
 
+use function Framework\throw_if;
+
 class SectionManager
 {
     /**
@@ -48,15 +50,15 @@ class SectionManager
      */
     public function start(string $name)
     {
-        if ($this->active_section !== null) {
-            throw new RuntimeException(
-                sprintf(
-                    'Cannot start section [%s] while section [%s] is already being captured.',
-                    $name,
-                    $this->active_section
-                )
-            );
-        }
+        throw_if(
+            $this->active_section !== null,
+            sprintf(
+                'Cannot start section [%s] while section [%s] is already being captured.',
+                $name,
+                $this->active_section
+            ),
+            RuntimeException::class
+        );
 
         $this->active_section = $name;
 

@@ -20,6 +20,8 @@ use JsonSerializable;
 
 use function Framework\Polyfill\str_starts_with;
 use function Framework\message;
+use function Framework\throw_anyway;
+use function Framework\throw_unless;
 
 class UploadedFile extends File implements JsonSerializable
 {
@@ -260,6 +262,7 @@ class UploadedFile extends File implements JsonSerializable
         if ($this->is_valid()) {
             $target = $this->get_target_file($directory, $name);
 
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Captures a PHP warning from rename()/move_uploaded_file() into a catchable value; restored in the finally block immediately after.
             set_error_handler(static function ($type, $msg) use (&$error) {
                 $error = $msg;
             });
@@ -270,23 +273,23 @@ class UploadedFile extends File implements JsonSerializable
                 restore_error_handler();
             }
 
-            if (!$moved) {
-                throw new Exception(
-                    message(
-                        'upload.move_failed',
-                        $this->getPathname(),
-                        $target,
-                        strip_tags($error ?? '')
-                    )
-                );
-            }
+            throw_unless(
+                $moved,
+                message(
+                    'upload.move_failed',
+                    $this->getPathname(),
+                    $target,
+                    strip_tags($error ?? '')
+                ),
+                Exception::class
+            );
 
             @chmod($target, 0666 & ~umask());
 
             return $target;
         }
 
-        throw new Exception($this->get_error_message());
+        throw_anyway($this->get_error_message());
     }
 
     /**

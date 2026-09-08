@@ -28,6 +28,8 @@ use Throwable;
 
 use function Framework\app;
 use function Framework\config;
+use function Framework\throw_anyway;
+use function Framework\throw_if;
 
 class CacheManager
 {
@@ -202,11 +204,11 @@ class CacheManager
         $configured = config('cache.stores');
         $configured = is_array($configured) ? $configured : [];
 
-        if (!isset($defaults[$name]) && !isset($configured[$name])) {
-            throw new InvalidArgumentException(
-                sprintf('Cache store [%s] is not configured. Check the "cache.stores" configuration.', $name)
-            );
-        }
+        throw_if(
+            !isset($defaults[$name]) && !isset($configured[$name]),
+            sprintf('Cache store [%s] is not configured. Check the "cache.stores" configuration.', $name),
+            InvalidArgumentException::class
+        );
 
         return array_merge($defaults[$name] ?? [], $configured[$name] ?? []);
     }
@@ -278,8 +280,9 @@ class CacheManager
             return $this->create_file_repository($name, $config);
         }
 
-        throw new InvalidArgumentException(
-            sprintf('Unsupported cache driver [%s] for store [%s].', (string) $driver, $name)
+        throw_anyway(
+            sprintf('Unsupported cache driver [%s] for store [%s].', (string) $driver, $name),
+            InvalidArgumentException::class
         );
     }
 

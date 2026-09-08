@@ -17,6 +17,7 @@ use Framework\Wordpress\UserMeta;
 use Exception;
 
 use function Framework\Polyfill\str_starts_with;
+use function Framework\throw_unless;
 use function Framework\with_prefix;
 
 /**
@@ -390,9 +391,11 @@ class User
      */
     public function __call($name, $arguments = [])
     {
-        if (!str_starts_with($name, 'can_')) {
-            throw new Exception(sprintf('Method %s does not exist', $name));
-        }
+        throw_unless(
+            str_starts_with($name, 'can_'),
+            sprintf('Method %s does not exist', $name),
+            Exception::class
+        );
 
         $action = preg_replace('/^can_/', '', $name);
 

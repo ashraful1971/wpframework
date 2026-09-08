@@ -27,6 +27,8 @@ use InvalidArgumentException;
 use Throwable;
 
 use function Framework\app;
+use function Framework\throw_if;
+use function Framework\throw_unless;
 use function Framework\value;
 
 class Repository implements ArrayAccess
@@ -234,9 +236,7 @@ class Repository implements ArrayAccess
     {
         $value = $this->get($key, $default);
 
-        if (!is_string($value)) {
-            throw new InvalidArgumentException($this->type_error($key, 'a string', $value));
-        }
+        throw_unless(is_string($value), $this->type_error($key, 'a string', $value), InvalidArgumentException::class);
 
         return $value;
     }
@@ -257,9 +257,11 @@ class Repository implements ArrayAccess
     {
         $value = $this->get($key, $default);
 
-        if (filter_var($value, FILTER_VALIDATE_INT) === false) {
-            throw new InvalidArgumentException($this->type_error($key, 'an integer', $value));
-        }
+        throw_if(
+            filter_var($value, FILTER_VALIDATE_INT) === false,
+            $this->type_error($key, 'an integer', $value),
+            InvalidArgumentException::class
+        );
 
         return (int) $value;
     }
@@ -280,9 +282,11 @@ class Repository implements ArrayAccess
     {
         $value = $this->get($key, $default);
 
-        if (filter_var($value, FILTER_VALIDATE_FLOAT) === false) {
-            throw new InvalidArgumentException($this->type_error($key, 'a float', $value));
-        }
+        throw_if(
+            filter_var($value, FILTER_VALIDATE_FLOAT) === false,
+            $this->type_error($key, 'a float', $value),
+            InvalidArgumentException::class
+        );
 
         return (float) $value;
     }
@@ -303,9 +307,7 @@ class Repository implements ArrayAccess
     {
         $value = $this->get($key, $default);
 
-        if (!is_bool($value)) {
-            throw new InvalidArgumentException($this->type_error($key, 'a boolean', $value));
-        }
+        throw_unless(is_bool($value), $this->type_error($key, 'a boolean', $value), InvalidArgumentException::class);
 
         return $value;
     }
@@ -326,9 +328,7 @@ class Repository implements ArrayAccess
     {
         $value = $this->get($key, $default);
 
-        if (!is_array($value)) {
-            throw new InvalidArgumentException($this->type_error($key, 'an array', $value));
-        }
+        throw_unless(is_array($value), $this->type_error($key, 'an array', $value), InvalidArgumentException::class);
 
         return $value;
     }
@@ -612,11 +612,11 @@ class Repository implements ArrayAccess
     {
         $key = (string) $key;
 
-        if (count($ttl) !== 2) {
-            throw new InvalidArgumentException(
-                sprintf('The flexible lifetime for key [%s] must be a fresh and stale pair.', $key)
-            );
-        }
+        throw_if(
+            count($ttl) !== 2,
+            sprintf('The flexible lifetime for key [%s] must be a fresh and stale pair.', $key),
+            InvalidArgumentException::class
+        );
 
         $fresh = (int) $this->seconds_until($ttl[0]);
         $stale = (int) $this->seconds_until($ttl[1]);

@@ -19,6 +19,7 @@ use stdClass;
 
 use function Framework\deep_get;
 use function Framework\message;
+use function Framework\throw_exception;
 
 defined('ABSPATH') || exit;
 
@@ -353,7 +354,7 @@ class Validator
     public function validate()
     {
         if ($this->fails()) {
-            throw ValidationException::with_errors($this->errors());
+            throw_exception(ValidationException::with_errors($this->errors()));
         }
 
         return $this->validated();
@@ -373,7 +374,7 @@ class Validator
         }
 
         if (!empty($this->errors())) {
-            throw ValidationException::with_errors($this->errors());
+            throw_exception(ValidationException::with_errors($this->errors()));
         }
 
         $results = [];

@@ -16,6 +16,10 @@ use Exception;
 use InvalidArgumentException;
 use SplFileInfo;
 
+use function Framework\throw_anyway;
+use function Framework\throw_if;
+use function Framework\throw_unless;
+
 class File extends SplFileInfo
 {
     /**
@@ -32,9 +36,11 @@ class File extends SplFileInfo
      */
     public function __construct(string $path, bool $check_path = true)
     {
-        if ($check_path && !file_exists($path)) {
-            throw new InvalidArgumentException("File does not exist at path: {$path}");
-        }
+        throw_if(
+            $check_path && !file_exists($path),
+            "File does not exist at path: {$path}",
+            InvalidArgumentException::class
+        );
 
         parent::__construct($path);
     }
@@ -55,6 +61,7 @@ class File extends SplFileInfo
     {
         $target = $this->get_target_file($directory, $name);
 
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Captures a PHP warning from rename()/move_uploaded_file() into a catchable value; restored in the finally block immediately after.
         set_error_handler(static function ($type, $msg) use (&$error) {
             $error = $msg;
         });
@@ -65,16 +72,16 @@ class File extends SplFileInfo
             restore_error_handler();
         }
 
-        if (!$renamed) {
-            throw new Exception(
-                sprintf(
-                    'Could not move the file "%s" to "%s" (%s).',
-                    $this->getPathname(),
-                    $target,
-                    strip_tags($error ?? '')
-                )
-            );
-        }
+        throw_unless(
+            $renamed,
+            sprintf(
+                'Could not move the file "%s" to "%s" (%s).',
+                $this->getPathname(),
+                $target,
+                strip_tags($error ?? '')
+            ),
+            Exception::class
+        );
 
         @chmod($target, 0666 & ~umask());
 
@@ -94,9 +101,7 @@ class File extends SplFileInfo
     {
         $content = file_get_contents($this->getPathname());
 
-        if ($content === false) {
-            throw new Exception(sprintf('Unable to read the file "%s".', $this->getPathname()));
-        }
+        throw_if($content === false, sprintf('Unable to read the file "%s".', $this->getPathname()));
 
         return $content;
     }
@@ -116,15 +121,15 @@ class File extends SplFileInfo
     protected function get_target_file(string $directory, ?string $name = null)
     {
         if (!is_dir($directory) && !@mkdir($directory, 0777, true) && !is_dir($directory)) {
-            if (is_file($directory)) {
-                throw new Exception(
-                    sprintf('Unable to create the "%s" directory. A similar named file exists.', $directory)
-                );
-            }
+            throw_if(
+                is_file($directory),
+                sprintf('Unable to create the "%s" directory. A similar named file exists.', $directory),
+                Exception::class
+            );
 
-            throw new Exception(sprintf('Unable to create the "%s" directory.', $directory));
+            throw_anyway(sprintf('Unable to create the "%s" directory.', $directory));
         } elseif (!is_writable($directory)) {
-            throw new Exception(sprintf('Unable to write in the "%s" directory.', $directory));
+            throw_anyway(sprintf('Unable to write in the "%s" directory.', $directory));
         }
 
         $target = rtrim($directory, '/\\')

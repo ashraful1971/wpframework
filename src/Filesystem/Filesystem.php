@@ -12,7 +12,6 @@ namespace Framework\Filesystem;
 
 defined('ABSPATH') || exit;
 
-use Exception;
 use Framework\Exceptions\AuthorizationException;
 use Framework\Exceptions\NotFoundException;
 use Framework\Sanitizer;
@@ -22,6 +21,8 @@ use WP_Filesystem_Base;
 
 use function Framework\Polyfill\str_starts_with;
 use function Framework\message;
+use function Framework\throw_if;
+use function Framework\throw_unless;
 
 class Filesystem
 {
@@ -319,15 +320,11 @@ class Filesystem
      */
     public function get($path)
     {
-        if (!$this->is_file($path)) {
-            throw new NotFoundException(message('filesystem.file_not_found', $path));
-        }
+        throw_unless($this->is_file($path), message('filesystem.file_not_found', $path), NotFoundException::class);
 
         $contents = $this->filesystem->get_contents($path);
 
-        if ($contents === false) {
-            throw new NotFoundException(message('filesystem.file_not_found', $path));
-        }
+        throw_if($contents === false, message('filesystem.file_not_found', $path), NotFoundException::class);
 
         return $contents;
     }
@@ -566,9 +563,11 @@ class Filesystem
      */
     public function upload(string $path, UploadedFile $file, $name = null)
     {
-        if (!current_user_can(Capabilities::UPLOAD_FILES)) {
-            throw new AuthorizationException(message('auth.upload_forbidden'));
-        }
+        throw_unless(
+            current_user_can(Capabilities::UPLOAD_FILES),
+            message('auth.upload_forbidden'),
+            AuthorizationException::class
+        );
 
         if (is_null($name)) {
             $name = $file->get_client_original_name();
@@ -604,17 +603,17 @@ class Filesystem
         $upload_directory = wp_upload_dir()['basedir'];
         $base = realpath($upload_directory);
 
-        if ($base === false) {
-            throw new Exception(message('upload.directory_unavailable'));
-        }
+        throw_if($base === false, message('upload.directory_unavailable'));
 
         $relative = Path::normalize($path);
         $directory = str_replace('\\', '/', Path::join($base, $relative));
         $base_normalized = str_replace('\\', '/', $base);
 
-        if ($directory !== $base_normalized && !str_starts_with($directory, $base_normalized . '/')) {
-            throw new AuthorizationException(message('auth.invalid_upload_path'));
-        }
+        throw_if(
+            $directory !== $base_normalized && !str_starts_with($directory, $base_normalized . '/'),
+            message('auth.invalid_upload_path'),
+            AuthorizationException::class
+        );
 
         return str_replace('/', DIRECTORY_SEPARATOR, $directory);
     }

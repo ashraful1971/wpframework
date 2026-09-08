@@ -18,6 +18,8 @@ use Framework\Database\Schema\Definitions\Definition;
 use Framework\Database\Schema\Definitions\ForeignKeyDefinition;
 use Exception;
 
+use function Framework\throw_unless;
+
 class Structure
 {
     /**
@@ -267,9 +269,7 @@ class Structure
     {
         $available_engines = ['InnoDB', 'MyISAM'];
 
-        if (!in_array($engine, $available_engines)) {
-            throw new Exception("Invalid engine: $engine");
-        }
+        throw_unless(in_array($engine, $available_engines), "Invalid engine: $engine");
 
         $this->engine = $engine;
     }
@@ -869,14 +869,14 @@ class Structure
      */
     protected function guard_altering(string $operation)
     {
-        if (!$this->is_altering()) {
-            throw new Exception(
-                sprintf(
-                    'The [%s] operation is only available when altering an existing table.',
-                    $operation
-                )
-            );
-        }
+        throw_unless(
+            $this->is_altering(),
+            sprintf(
+                'The [%s] operation is only available when altering an existing table.',
+                $operation
+            ),
+            Exception::class
+        );
     }
 
     /**

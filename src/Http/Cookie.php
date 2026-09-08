@@ -14,6 +14,9 @@ defined('ABSPATH') || exit;
 
 use InvalidArgumentException;
 
+use function Framework\throw_if;
+use function Framework\throw_unless;
+
 class Cookie
 {
     /**
@@ -425,11 +428,11 @@ class Cookie
 
         $normalized = strtolower((string) $same_site);
 
-        if (!isset($supported[$normalized])) {
-            throw new InvalidArgumentException(
-                sprintf('The same site attribute "%s" is invalid.', $same_site)
-            );
-        }
+        throw_unless(
+            isset($supported[$normalized]),
+            sprintf('The same site attribute "%s" is invalid.', $same_site),
+            InvalidArgumentException::class
+        );
 
         return $supported[$normalized];
     }
@@ -451,10 +454,10 @@ class Cookie
             throw new InvalidArgumentException('The cookie name cannot be empty.');
         }
 
-        if (strpbrk($name, static::RESERVED_CHARACTERS) !== false) {
-            throw new InvalidArgumentException(
-                sprintf('The cookie name "%s" contains invalid characters.', $name)
-            );
-        }
+        throw_if(
+            strpbrk($name, static::RESERVED_CHARACTERS) !== false,
+            sprintf('The cookie name "%s" contains invalid characters.', $name),
+            InvalidArgumentException::class
+        );
     }
 }

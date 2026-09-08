@@ -28,6 +28,8 @@ use function Framework\app;
 use function Framework\collection;
 use function Framework\Polyfill\str_contains;
 use function Framework\tap;
+use function Framework\throw_anyway;
+use function Framework\throw_if;
 
 trait HasAttributes
 {
@@ -199,20 +201,18 @@ trait HasAttributes
         $relation = $this->$method();
 
         if (!$relation instanceof Relation) {
-            if (is_null($relation)) {
-                throw new LogicException(sprintf(
-                    '%s::%s must return a relationship instance, ' 
-                    . 'but "null" was returned. Was the "return" keyword used?',
-                    static::class,
-                    $method,
-                ));
-            }
+            throw_if(is_null($relation), sprintf(
+                '%s::%s must return a relationship instance, '
+                . 'but "null" was returned. Was the "return" keyword used?',
+                static::class,
+                $method,
+            ), LogicException::class);
 
-            throw new LogicException(sprintf(
+            throw_anyway(sprintf(
                 '%s::%s must return a relationship instance.',
                 static::class,
                 $method,
-            ));
+            ), LogicException::class);
         }
 
         return tap($relation->get_results(), function ($results) use ($method) {
@@ -547,9 +547,7 @@ trait HasAttributes
     {
         $value = $this->as_json($value);
 
-        if ($value === false) {
-            throw new InvalidCastException($this, $key, 'json');
-        }
+        throw_if($value === false, $this, InvalidCastException::class, $key, 'json');
 
         return $value;
     }
@@ -992,7 +990,7 @@ trait HasAttributes
             return true;
         }
 
-        throw new InvalidCastException($this, $key, $cast_type);
+        throw_anyway($this, InvalidCastException::class, $key, $cast_type);
     }
 
     /**

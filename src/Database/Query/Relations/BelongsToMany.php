@@ -1035,7 +1035,7 @@ class BelongsToMany extends Relation
      */
     protected function add_timestamps_to_pivot(array &$record, $update = false)
     {
-        $timestamp = date('Y-m-d H:i:s');
+        $timestamp = gmdate('Y-m-d H:i:s');
 
         if (!$update && !isset($record['created_at'])) {
             $record['created_at'] = $timestamp;

@@ -1066,15 +1066,36 @@ if (!function_exists('Framework\throw_anyway')) {
     /**
      * Throw an exception unconditionally
      *
-     * @param string $message The message to attach
+     * @param mixed $message The message to attach, or the primary constructor argument for exceptions with a non-string leading parameter
      * @param string $exception_class The exception class
      * @param array $params The rest of the params
-     * 
+     *
      * @throws Exception
      */
-    function throw_anyway(string $message = "", $exception_class = Exception::class, ...$params)
+    function throw_anyway($message = "", $exception_class = Exception::class, ...$params)
     {
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Escaping is handled centrally by the framework's exception handler at the point of output, not at the point of throwing.
         throw new $exception_class($message, ...$params);
+    }
+}
+
+if (!function_exists('Framework\throw_exception')) {
+    /**
+     * Throw an already-built exception instance unconditionally.
+     *
+     * For call sites that build the exception ahead of time (e.g. a helper method that may
+     * return one of several pre-existing exception instances) rather than constructing one
+     * from a class and arguments, so throw_anyway()'s `new $exception_class(...)` shape
+     * doesn't apply.
+     *
+     * @param Throwable $exception The exception instance to throw.
+     *
+     * @throws Throwable
+     */
+    function throw_exception($exception)
+    {
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Escaping is handled centrally by the framework's exception handler at the point of output, not at the point of throwing.
+        throw $exception;
     }
 }
 
@@ -1083,15 +1104,15 @@ if (!function_exists('Framework\throw_if')) {
      * Throw an exception if the condition is satisfied.
      * 
      * @param bool $condition The condition to satisfy
-     * @param string $message The message to show with the exception
+     * @param mixed $message The message to show with the exception, or the primary constructor argument for exceptions with a non-string leading parameter
      * @param string $exception_class The exception class
      * @param array $params The other params
-     * 
+     *
      * @throws Exception
      *
      * @since  1.0.0
      */
-    function throw_if(bool $condition, string $message = "", $exception_class = Exception::class, ...$params)
+    function throw_if(bool $condition, $message = "", $exception_class = Exception::class, ...$params)
     {
         if ($condition) {
             throw_anyway($message, $exception_class, ...$params);
@@ -1104,15 +1125,15 @@ if (!function_exists('Framework\throw_unless')) {
      * Throw an exception if the condition is satisfied.
      * 
      * @param bool $condition The condition to satisfy
-     * @param string $message The message to show with the exception
+     * @param mixed $message The message to show with the exception, or the primary constructor argument for exceptions with a non-string leading parameter
      * @param string $exception_class The exception class
      * @param array $params The other params
-     * 
+     *
      * @throws Exception
      *
      * @since  1.0.0
      */
-    function throw_unless(bool $condition, string $message = "", $exception_class = Exception::class, ...$params)
+    function throw_unless(bool $condition, $message = "", $exception_class = Exception::class, ...$params)
     {
         if (!$condition) {
             throw_anyway($message, $exception_class, ...$params);

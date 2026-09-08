@@ -33,6 +33,7 @@ use ReflectionClass;
 
 use function Framework\app;
 use function Framework\Polyfill\str_contains;
+use function Framework\throw_anyway;
 
 abstract class Model implements Arrayable, Jsonable, ArrayAccess, JsonSerializable
 {
@@ -859,12 +860,13 @@ abstract class Model implements Arrayable, Jsonable, ArrayAccess, JsonSerializab
                 if (isset(static::$discarded_attribute_callback)) {
                     call_user_func(static::$discarded_attribute_callback, $this, [$key]);
                 } else {
-                    throw new MassAssignmentException(
+                    throw_anyway(
                         sprintf(
                             'Add [%s] to fillable array to allow mass assignment on [%s].',
                             $key,
                             get_class($this)
-                        )
+                        ),
+                        MassAssignmentException::class
                     );
                 }
             }
@@ -876,12 +878,13 @@ abstract class Model implements Arrayable, Jsonable, ArrayAccess, JsonSerializab
             if (isset(static::$discarded_attribute_callback)) {
                 call_user_func(static::$discarded_attribute_callback, $this, $keys);
             } else {
-                throw new MassAssignmentException(
+                throw_anyway(
                     sprintf(
                         'Add [%s] to fillable array to allow mass assignment on [%s].',
                         implode(', ', $keys),
                         get_class($this)
-                    )
+                    ),
+                    MassAssignmentException::class
                 );
             }
         }

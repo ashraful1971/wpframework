@@ -16,6 +16,7 @@ use Framework\Contracts\Request;
 use Framework\Exceptions\AuthorizationException;
 
 use function Framework\message;
+use function Framework\throw_anyway;
 
 class AuthMiddleware implements Middleware
 {
@@ -38,6 +39,6 @@ class AuthMiddleware implements Middleware
             return $next($request);
         };
 
-        throw new AuthorizationException(message('auth.logged_in_required'));
+        throw_anyway(message('auth.logged_in_required'), AuthorizationException::class);
     }
 }

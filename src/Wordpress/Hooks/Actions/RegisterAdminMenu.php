@@ -19,6 +19,7 @@ use Framework\Wordpress\Menu;
 use Exception;
 
 use function Framework\config;
+use function Framework\throw_if;
 
 class RegisterAdminMenu extends BaseHook
 {
@@ -66,9 +67,11 @@ class RegisterAdminMenu extends BaseHook
         }
 
         foreach ($menus as $menu) {
-            if (!class_exists($menu) || !is_subclass_of($menu, Menu::class)) {
-                throw new Exception(sprintf('Menu class %s does not exist.', $menu));
-            }
+            throw_if(
+                !class_exists($menu) || !is_subclass_of($menu, Menu::class),
+                sprintf('Menu class %s does not exist.', $menu),
+                Exception::class
+            );
 
             $menu_instance = new $menu();
 

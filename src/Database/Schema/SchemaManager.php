@@ -16,6 +16,8 @@ use Closure;
 use Framework\Database\Connection\Connection;
 use Exception;
 
+use function Framework\throw_if;
+
 class SchemaManager
 {
     /**
@@ -61,9 +63,11 @@ class SchemaManager
         $create_sql = $structure->get_table_structure();
         $this->connection->get_db()->query($create_sql);
 
-        if (!empty($this->connection->get_db()->last_error)) {
-            throw new Exception($this->connection->get_db()->last_error);
-        }
+        throw_if(
+            !empty($this->connection->get_db()->last_error),
+            $this->connection->get_db()->last_error,
+            Exception::class
+        );
     }
 
     /**
@@ -86,9 +90,11 @@ class SchemaManager
         $alter_sql = $structure->get_table_structure();
         $this->connection->get_db()->query($alter_sql);
 
-        if (!empty($this->connection->get_db()->last_error)) {
-            throw new Exception($this->connection->get_db()->last_error);
-        }
+        throw_if(
+            !empty($this->connection->get_db()->last_error),
+            $this->connection->get_db()->last_error,
+            Exception::class
+        );
     }
 
     /**
@@ -115,9 +121,11 @@ class SchemaManager
             )
         );
 
-        if (!empty($this->connection->get_db()->last_error)) {
-            throw new Exception($this->connection->get_db()->last_error);
-        }
+        throw_if(
+            !empty($this->connection->get_db()->last_error),
+            $this->connection->get_db()->last_error,
+            Exception::class
+        );
     }
 
     /**
