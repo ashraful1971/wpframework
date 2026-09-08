@@ -14,6 +14,7 @@ defined('ABSPATH') || exit;
 
 use Framework\Collections\Collection;
 use Framework\Filesystem\UploadedFile;
+use Framework\Http\Superglobals;
 use SplFileInfo;
 
 use function Framework\deep_get;
@@ -67,8 +68,7 @@ trait InteractsWithFiles
      */
     protected function load_files_from_global()
     {
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $files = $_FILES ?? [];
+        $files = Superglobals::files();
         $keys = array_keys($files);
 
         $files = array_map(function ($file) {

@@ -19,47 +19,47 @@ use Framework\View\ViewContext;
 
 use function Framework\app;
 
-$context = app(ViewContext::class);
-$active = $context->get_active();
+$framework_context = app(ViewContext::class);
+$framework_active = $framework_context->get_active();
 
-if ($active === null || empty($active['resolved_path'])) {
+if ($framework_active === null || empty($framework_active['resolved_path'])) {
     return;
 }
 
-$path = $active['resolved_path'];
-$engine = app(TemplateEngine::class);
+$framework_path = $framework_active['resolved_path'];
+$framework_engine = app(TemplateEngine::class);
 
 // Master layout: child populates sections, then master layout renders around them.
-if (!empty($active['master_layout'])) {
-    $master_path = $engine->resolve_path($active['master_layout']);
+if (!empty($framework_active['master_layout'])) {
+    $framework_master_path = $framework_engine->resolve_path($framework_active['master_layout']);
 
-    if ($master_path === '') {
+    if ($framework_master_path === '') {
         return;
     }
 
-    $sections = app(SectionManager::class);
-    $sections->clear();
+    $framework_sections = app(SectionManager::class);
+    $framework_sections->clear();
 
     // Execute the child template to populate sections.
     ob_start();
-    require $path;
+    require $framework_path;
     ob_end_clean();
 
     // Render the master layout which yields the captured sections.
     ob_start();
-    require $master_path;
+    require $framework_master_path;
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Assembled layout HTML; dynamic data is escaped in view templates via esc_*.
     echo (string) ob_get_clean();
 
-    $sections->clear();
+    $framework_sections->clear();
 
     return;
 }
 
 // Standard theme layout: wrap with header/footer.
 ob_start();
-require $path;
-$content = (string) ob_get_clean();
+require $framework_path;
+$framework_content = (string) ob_get_clean();
 
 // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Assembled layout HTML; dynamic data is escaped in view templates via esc_*.
-echo $engine->wrap_layout($content);
+echo $framework_engine->wrap_layout($framework_content);

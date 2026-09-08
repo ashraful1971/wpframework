@@ -113,7 +113,7 @@ class Connection
             global $wpdb;
             $this->db = $wpdb;
         } catch (Exception $error) {
-            throw_anyway("Database connection failed: " . $error->getMessage(), Exception::class);
+            throw_anyway("Database connection failed: " . $error->getMessage());
         }
     }
 

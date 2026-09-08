@@ -1207,7 +1207,7 @@ class Route
             Exception::class
         );
 
-        throw_unless(class_exists($abstract), sprintf('Class "%s" does not exist.', $abstract), Exception::class);
+        throw_unless(class_exists($abstract), sprintf('Class "%s" does not exist.', $abstract));
 
         $reflector = new ReflectionClass($abstract);
 

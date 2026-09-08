@@ -13,6 +13,8 @@ defined('ABSPATH') || exit;
 
 use Framework\Http\JsonResponse;
 use Framework\Http\RedirectResponse;
+use Framework\Http\Request;
+use Framework\Http\Superglobals;
 use Framework\Managers\CookieManager;
 use Framework\Managers\SessionManager;
 use Framework\Route;
@@ -268,7 +270,7 @@ class SiteRouter
     {
         $path = isset($wp->request) && $wp->request !== ''
             ? trim((string) $wp->request, '/')
-            : $this->resolve_request_path();
+            : Request::resolve_request_path(Superglobals::server());
 
         foreach ($this->routes as $id => $route) {
             if ($route->get_match_using() === Route::MATCH_PAGE) {
@@ -466,8 +468,7 @@ class SiteRouter
             return null;
         }
 
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        $method = Request::resolve_method(Superglobals::server());
 
         if (strtoupper($route->get_method()) !== $method) {
             SiteExceptionHandler::handle(new Exception('Method Not Allowed', 405));
@@ -662,8 +663,7 @@ class SiteRouter
      */
     protected function get_matched_route(Route $route)
     {
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $request_method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        $request_method = Request::resolve_method(Superglobals::server());
 
         foreach ($this->routes as $route_entry) {
             if (
@@ -802,27 +802,6 @@ class SiteRouter
 
         wp_safe_redirect($url, $redirect['status']);
         exit;
-    }
-
-    /**
-     * Resolve the current request path relative to the site home path.
-     *
-     * @return string
-     *
-     * @since 1.0.0
-     */
-    protected function resolve_request_path()
-    {
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
-        $path = (string) parse_url($request_uri, PHP_URL_PATH);
-        $home_path = (string) parse_url(home_url(), PHP_URL_PATH);
-
-        if ($home_path !== '' && $home_path !== '/' && strpos($path, $home_path) === 0) {
-            $path = substr($path, strlen($home_path));
-        }
-
-        return trim($path, '/');
     }
 
     /**

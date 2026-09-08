@@ -216,6 +216,7 @@ class ViewContext
     protected function trace_files()
     {
         $files = [];
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Collects calling file paths to scope view-data access; not debugging output.
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
         foreach ($trace as $frame) {

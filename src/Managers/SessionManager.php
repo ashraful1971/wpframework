@@ -14,6 +14,8 @@ defined('ABSPATH') || exit;
 
 use Exception;
 use Framework\Contracts\SessionHandler;
+use Framework\Http\Superglobals;
+use Framework\Sanitizer;
 use Framework\Supports\Arr;
 
 use function Framework\app;
@@ -274,14 +276,7 @@ class SessionManager
     protected function request_cookie(string $name)
     {
         // Reading the session id cookie; the value is format-validated before use.
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $value = $_COOKIE[$name] ?? null;
-
-        if (!is_string($value)) {
-            return null;
-        }
-
-        return function_exists('wp_unslash') ? wp_unslash($value) : $value;
+        return Superglobals::cookie($name, null, Sanitizer::KEY);
     }
 
     /**

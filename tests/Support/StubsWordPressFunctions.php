@@ -98,6 +98,13 @@ if (!function_exists('home_url')) {
     }
 }
 
+if (!function_exists('wp_parse_url')) {
+    function wp_parse_url($url, $component = -1)
+    {
+        return parse_url($url, $component);
+    }
+}
+
 if (!function_exists('apply_filters')) {
     function apply_filters($hook_name, $value, ...$args)
     {
@@ -120,6 +127,13 @@ if (!function_exists('wp_unslash')) {
         }
 
         return is_string($value) ? stripslashes($value) : $value;
+    }
+}
+
+if (!function_exists('absint')) {
+    function absint($value)
+    {
+        return abs((int) $value);
     }
 }
 

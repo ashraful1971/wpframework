@@ -55,7 +55,6 @@ use Framework\Supports\Facades\Command;
 use Framework\Supports\Facades\File;
 use Framework\Supports\Str;
 use Framework\Supports\Traits\Macroable;
-use Exception;
 use Framework\Supports\Arr;
 use InvalidArgumentException;
 use RuntimeException;
@@ -501,7 +500,7 @@ class Application extends Container
      */
     public function use_routing(string $path)
     {
-        throw_unless(file_exists($path), "Route file not found: $path", Exception::class);
+        throw_unless(file_exists($path), "Route file not found: $path");
 
         include $path;
 

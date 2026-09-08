@@ -106,6 +106,7 @@ trait HasRelationships
      */
     protected function guess_belongs_to_relation()
     {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Introspects the calling method name to guess a relation; not debugging output.
         [, , $caller] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
         return $caller['function'];
@@ -173,6 +174,7 @@ trait HasRelationships
      */
     protected function guess_belongs_to_many_relation()
     {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Introspects the calling method name to guess a relation; not debugging output.
         $caller = Arr::first(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), function ($trace) {
             return !in_array(
                 $trace['function'],

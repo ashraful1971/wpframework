@@ -12,7 +12,6 @@ namespace Framework\Filesystem;
 
 defined('ABSPATH') || exit;
 
-use Exception;
 use Framework\Exceptions\AuthorizationException;
 use Framework\Exceptions\NotFoundException;
 use Framework\Sanitizer;
@@ -604,7 +603,7 @@ class Filesystem
         $upload_directory = wp_upload_dir()['basedir'];
         $base = realpath($upload_directory);
 
-        throw_if($base === false, message('upload.directory_unavailable'), Exception::class);
+        throw_if($base === false, message('upload.directory_unavailable'));
 
         $relative = Path::normalize($path);
         $directory = str_replace('\\', '/', Path::join($base, $relative));

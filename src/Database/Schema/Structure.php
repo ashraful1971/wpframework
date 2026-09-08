@@ -269,7 +269,7 @@ class Structure
     {
         $available_engines = ['InnoDB', 'MyISAM'];
 
-        throw_unless(in_array($engine, $available_engines), "Invalid engine: $engine", Exception::class);
+        throw_unless(in_array($engine, $available_engines), "Invalid engine: $engine");
 
         $this->engine = $engine;
     }

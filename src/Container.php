@@ -332,7 +332,7 @@ class Container implements ContainerContract
             throw_anyway(sprintf(
                 'Circular dependency detected: %s',
                 $chain
-            ), Exception::class);
+            ));
         }
 
         $this->resolved[] = $class;
@@ -421,7 +421,7 @@ class Container implements ContainerContract
             'Unable to resolve primitive parameter "%s" in class "%s".',
             $param_name,
             $parameter->getDeclaringClass()->getName()
-        ), Exception::class);
+        ));
     }
 
     /**

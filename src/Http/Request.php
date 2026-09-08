@@ -276,8 +276,14 @@ class Request implements RequestContract, Arrayable
      */
     public static function capture()
     {
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        return (new static())->make_from_http($_GET, $_POST, $_FILES, $_SERVER, [], $_COOKIE);
+        return (new static())->make_from_http(
+            Superglobals::query(),
+            Superglobals::post(),
+            Superglobals::files(),
+            Superglobals::server(),
+            [],
+            Superglobals::cookie()
+        );
     }
 
     /**
@@ -306,8 +312,8 @@ class Request implements RequestContract, Arrayable
         $body = $this->unslash_array($body);
 
         $this->attributes = array_merge($query, $body, $route_params);
-        $this->method = strtoupper($server['REQUEST_METHOD'] ?? 'GET');
-        $this->route = $this->resolve_request_path($server);
+        $this->method = static::resolve_method($server);
+        $this->route = static::resolve_request_path($server);
         $this->headers = $this->extract_headers($server);
         $this->server = $server;
         $this->route_params = $route_params;
@@ -383,13 +389,13 @@ class Request implements RequestContract, Arrayable
      *
      * @since 1.0.0
      */
-    protected function resolve_request_path(array $server)
+    public static function resolve_request_path(array $server)
     {
         $request_uri = isset($server['REQUEST_URI']) ? (string) $server['REQUEST_URI'] : '';
-        $path = (string) parse_url($request_uri, PHP_URL_PATH);
+        $path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
 
         if (function_exists('home_url')) {
-            $home_path = (string) parse_url(home_url(), PHP_URL_PATH);
+            $home_path = (string) wp_parse_url(home_url(), PHP_URL_PATH);
 
             if ($home_path !== '' && $home_path !== '/' && strpos($path, $home_path) === 0) {
                 $path = substr($path, strlen($home_path));
@@ -397,6 +403,20 @@ class Request implements RequestContract, Arrayable
         }
 
         return trim($path, '/');
+    }
+
+    /**
+     * Resolve the HTTP method from server parameters.
+     *
+     * @param array $server Server parameters.
+     *
+     * @return string
+     *
+     * @since 1.0.0
+     */
+    public static function resolve_method(array $server)
+    {
+        return strtoupper($server['REQUEST_METHOD'] ?? 'GET');
     }
 
     /**

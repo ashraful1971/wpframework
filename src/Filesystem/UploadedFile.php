@@ -262,6 +262,7 @@ class UploadedFile extends File implements JsonSerializable
         if ($this->is_valid()) {
             $target = $this->get_target_file($directory, $name);
 
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Captures a PHP warning from rename()/move_uploaded_file() into a catchable value; restored in the finally block immediately after.
             set_error_handler(static function ($type, $msg) use (&$error) {
                 $error = $msg;
             });
@@ -288,7 +289,7 @@ class UploadedFile extends File implements JsonSerializable
             return $target;
         }
 
-        throw_anyway($this->get_error_message(), Exception::class);
+        throw_anyway($this->get_error_message());
     }
 
     /**

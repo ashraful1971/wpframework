@@ -61,6 +61,7 @@ class File extends SplFileInfo
     {
         $target = $this->get_target_file($directory, $name);
 
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Captures a PHP warning from rename()/move_uploaded_file() into a catchable value; restored in the finally block immediately after.
         set_error_handler(static function ($type, $msg) use (&$error) {
             $error = $msg;
         });
@@ -100,7 +101,7 @@ class File extends SplFileInfo
     {
         $content = file_get_contents($this->getPathname());
 
-        throw_if($content === false, sprintf('Unable to read the file "%s".', $this->getPathname()), Exception::class);
+        throw_if($content === false, sprintf('Unable to read the file "%s".', $this->getPathname()));
 
         return $content;
     }
@@ -126,9 +127,9 @@ class File extends SplFileInfo
                 Exception::class
             );
 
-            throw_anyway(sprintf('Unable to create the "%s" directory.', $directory), Exception::class);
+            throw_anyway(sprintf('Unable to create the "%s" directory.', $directory));
         } elseif (!is_writable($directory)) {
-            throw_anyway(sprintf('Unable to write in the "%s" directory.', $directory), Exception::class);
+            throw_anyway(sprintf('Unable to write in the "%s" directory.', $directory));
         }
 
         $target = rtrim($directory, '/\\')

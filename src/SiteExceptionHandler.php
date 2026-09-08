@@ -15,6 +15,7 @@ use Framework\Exceptions\HttpException;
 use Framework\Exceptions\ModelNotFoundException;
 use Framework\Exceptions\ValidationException;
 use Framework\Http\Response;
+use Framework\Supports\Facades\Log;
 use Exception;
 
 class SiteExceptionHandler
@@ -57,9 +58,7 @@ class SiteExceptionHandler
             $status = Response::INTERNAL_SERVER_ERROR;
         }
 
-        if (function_exists('error_log')) {
-            error_log($exception->getMessage());
-        }
+        Log::error($exception->getMessage());
 
         static::fail($status, $exception->getMessage() ?: 'Internal Server Error');
     }
@@ -101,6 +100,6 @@ class SiteExceptionHandler
     {
         status_header($status);
         nocache_headers();
-        wp_die(esc_html($message), esc_html($message), ['response' => $status]);
+        wp_die(esc_html($message), esc_html($message), ['response' => absint($status)]);
     }
 }
