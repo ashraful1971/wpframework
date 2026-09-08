@@ -261,8 +261,7 @@ class Request implements RequestContract, Arrayable
         $this->route_params = $request->get_url_params();
 
         // WP_REST_Request carries no cookie params, so read them from the superglobal.
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $this->cookies = $this->unslash_array($_COOKIE ?? []);
+        $this->cookies = Superglobals::cookie();
 
         return $this;
     }
@@ -915,8 +914,7 @@ class Request implements RequestContract, Arrayable
      */
     public function ip()
     {
-        // phpcs:ignore Framework.NamingConventions.SnakeCaseVariable.NotSnakeCase
-        $server = !empty($this->server) ? $this->server : $_SERVER;
+        $server = !empty($this->server) ? $this->server : Superglobals::server();
         $remote = isset($server['REMOTE_ADDR']) ? trim((string) $server['REMOTE_ADDR']) : null;
 
         if (empty($remote) || !$this->is_trusted_proxy($remote)) {
