@@ -858,3 +858,98 @@ if (!function_exists('sanitize_file_name')) {
         return trim($filename, '.-_');
     }
 }
+
+if (!function_exists('is_wp_error')) {
+    function is_wp_error($thing)
+    {
+        return $thing instanceof WP_Error;
+    }
+}
+
+if (!function_exists('get_plugins')) {
+    function get_plugins()
+    {
+        return $GLOBALS['framework_test_plugins'] ?? [];
+    }
+}
+
+if (!function_exists('is_plugin_active')) {
+    function is_plugin_active($plugin)
+    {
+        return in_array($plugin, $GLOBALS['framework_test_active_plugins'] ?? [], true);
+    }
+}
+
+if (!function_exists('activate_plugin')) {
+    function activate_plugin($plugin, $redirect = '', $network_wide = false, $silent = false)
+    {
+        $error = $GLOBALS['framework_test_activate_plugin_error'] ?? null;
+
+        if ($error instanceof WP_Error) {
+            return $error;
+        }
+
+        $GLOBALS['framework_test_active_plugins'][] = $plugin;
+
+        return null;
+    }
+}
+
+if (!function_exists('deactivate_plugins')) {
+    function deactivate_plugins($plugins, $silent = false, $network_wide = null)
+    {
+        $plugins = (array) $plugins;
+
+        $GLOBALS['framework_test_active_plugins'] = array_values(array_diff(
+            $GLOBALS['framework_test_active_plugins'] ?? [],
+            $plugins
+        ));
+    }
+}
+
+if (!function_exists('delete_plugins')) {
+    function delete_plugins($plugins)
+    {
+        $error = $GLOBALS['framework_test_delete_plugins_error'] ?? null;
+
+        if ($error instanceof WP_Error) {
+            return $error;
+        }
+
+        foreach ($plugins as $plugin) {
+            unset($GLOBALS['framework_test_plugins'][$plugin]);
+        }
+
+        return true;
+    }
+}
+
+if (!class_exists('Plugin_Upgrader')) {
+    class Plugin_Upgrader
+    {
+        public function __construct($skin = null)
+        {
+        }
+
+        public function install($package, $args = [])
+        {
+            $GLOBALS['framework_test_plugin_upgrader_install_args'] = $args;
+
+            return $GLOBALS['framework_test_plugin_upgrader_install_result'] ?? true;
+        }
+
+        public function plugin_info()
+        {
+            return $GLOBALS['framework_test_plugin_upgrader_plugin_info'] ?? false;
+        }
+    }
+}
+
+if (!class_exists('Automatic_Upgrader_Skin')) {
+    class Automatic_Upgrader_Skin
+    {
+        public function __construct($args = [])
+        {
+        }
+    }
+}
