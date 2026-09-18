@@ -69,8 +69,6 @@ class Extension
 
         throw_if(!$plugin_path, 'Could not determine plugin path.');
 
-        throw_if(static::is_active($plugin_path), 'Plugin is already active.');
-
         return static::activate($plugin_path);
     }
 
