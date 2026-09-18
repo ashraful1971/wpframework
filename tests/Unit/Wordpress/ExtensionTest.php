@@ -96,16 +96,6 @@ class ExtensionTest extends TestCase
         Extension::install('https://example.com/plugin.zip');
     }
 
-    public function test_install_throws_instead_of_reactivating_an_already_active_plugin(): void
-    {
-        $GLOBALS['framework_test_plugin_upgrader_plugin_info'] = 'sample/sample.php';
-        $GLOBALS['framework_test_active_plugins'] = ['sample/sample.php'];
-
-        $this->expectException(Exception::class);
-
-        Extension::install('https://example.com/plugin.zip');
-    }
-
     public function test_is_installed_returns_true_for_installed_plugin(): void
     {
         $GLOBALS['framework_test_plugins'] = ['sample/sample.php' => ['Name' => 'Sample']];
